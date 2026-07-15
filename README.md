@@ -20,7 +20,7 @@ The all-in-one operations dashboard for Jellyfin. Monitor server health, track a
 ## Start it
 
 1. Install Docker Desktop (or Docker Engine) on the machine hosting Jellyfin.
-2. Copy `.env.example` to `.env` and replace both secret values. Generate the encryption key with:
+2. Copy `.env.example` to `.env` and replace both secret values. `POSTGRES_PASSWORD` may contain special characters; JellyPulse passes it safely to PostgreSQL without placing it inside a connection URL. Generate the encryption key with:
 
    ```sh
    openssl rand -base64 32

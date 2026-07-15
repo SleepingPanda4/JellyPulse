@@ -5,7 +5,11 @@ services:
     # Localhost only by default. Put it behind HTTPS/VPN before changing this.
     ports: ["${APP_BIND_ADDRESS:-127.0.0.1}:3000:3000"]
     environment:
-      DATABASE_URL: postgresql://reporter:${POSTGRES_PASSWORD}@db:5432/reporter
+      PGHOST: db
+      PGPORT: 5432
+      PGUSER: reporter
+      PGPASSWORD: ${POSTGRES_PASSWORD}
+      PGDATABASE: reporter
       # Generate once: openssl rand -base64 32. Never change after setup.
       APP_ENCRYPTION_KEY: ${APP_ENCRYPTION_KEY}
       SESSION_COOKIE_SECURE: "false" # change to true behind HTTPS

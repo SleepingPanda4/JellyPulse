@@ -1,5 +1,9 @@
 import pg from 'pg';
-export const db = new pg.Pool({ connectionString: process.env.DATABASE_URL });
+export const db = new pg.Pool(process.env.DATABASE_URL ? { connectionString: process.env.DATABASE_URL } : {
+  host: process.env.PGHOST || 'db', port: Number(process.env.PGPORT || 5432),
+  user: process.env.PGUSER || 'reporter', password: process.env.PGPASSWORD,
+  database: process.env.PGDATABASE || 'reporter'
+});
 
 export async function migrate() {
   await db.query(`
