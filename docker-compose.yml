@@ -1,0 +1,53 @@
+services:
+  app:
+    build: .
+    restart: unless-stopped
+    # Localhost only by default. Put it behind HTTPS/VPN before changing this.
+    ports: ["${APP_BIND_ADDRESS:-127.0.0.1}:3000:3000"]
+    environment:
+      DATABASE_URL: postgresql://reporter:${POSTGRES_PASSWORD}@db:5432/reporter
+      # Generate once: openssl rand -base64 32. Never change after setup.
+      APP_ENCRYPTION_KEY: ${APP_ENCRYPTION_KEY}
+      SESSION_COOKIE_SECURE: "false" # change to true behind HTTPS
+      DOCKER_HOST: tcp://docker-proxy:2375
+      JELLYFIN_CONTAINER_NAME: ${JELLYFIN_CONTAINER_NAME:-jellyfin}
+    depends_on: [db, docker-proxy]
+
+  db:
+    image: postgres:17-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: reporter
+      POSTGRES_USER: reporter
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    volumes: [postgres-data:/var/lib/postgresql/data]
+
+  # The app gets read-only Docker metadata/stats, never direct Docker-socket access.
+  docker-proxy:
+    image: tecnativa/docker-socket-proxy:latest
+    restart: unless-stopped
+    environment:
+      CONTAINERS: 1
+      POST: 0
+      AUTH: 0
+      BUILD: 0
+      COMMIT: 0
+      CONFIGS: 0
+      DISTRIBUTION: 0
+      EVENTS: 0
+      EXEC: 0
+      IMAGES: 0
+      INFO: 0
+      NETWORKS: 0
+      NODES: 0
+      PLUGINS: 0
+      SECRETS: 0
+      SERVICES: 0
+      SWARM: 0
+      SYSTEM: 0
+      TASKS: 0
+      VOLUMES: 0
+    volumes: [/var/run/docker.sock:/var/run/docker.sock:ro]
+
+volumes:
+  postgres-data:

@@ -1,0 +1,4 @@
+import crypto from 'node:crypto';
+const key = () => { const v = process.env.APP_ENCRYPTION_KEY; if (!v) throw new Error('APP_ENCRYPTION_KEY is required'); const k = Buffer.from(v, 'base64'); if (k.length !== 32) throw new Error('APP_ENCRYPTION_KEY must be 32 bytes, base64 encoded'); return k; };
+export function encrypt(plain: string) { const iv = crypto.randomBytes(12), cipher = crypto.createCipheriv('aes-256-gcm', key(), iv); const body = Buffer.concat([cipher.update(plain, 'utf8'), cipher.final()]); return [iv.toString('base64'), cipher.getAuthTag().toString('base64'), body.toString('base64')].join('.'); }
+export function decrypt(value: string) { const [iv, tag, body] = value.split('.').map(x => Buffer.from(x, 'base64')); const decipher = crypto.createDecipheriv('aes-256-gcm', key(), iv); decipher.setAuthTag(tag); return Buffer.concat([decipher.update(body), decipher.final()]).toString('utf8'); }
