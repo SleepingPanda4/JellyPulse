@@ -11,7 +11,11 @@ services:
       SESSION_COOKIE_SECURE: "false" # change to true behind HTTPS
       DOCKER_HOST: tcp://docker-proxy:2375
       JELLYFIN_CONTAINER_NAME: ${JELLYFIN_CONTAINER_NAME:-jellyfin}
-    depends_on: [db, docker-proxy]
+    depends_on:
+      db:
+        condition: service_healthy
+      docker-proxy:
+        condition: service_started
 
   db:
     image: postgres:17-alpine
@@ -21,6 +25,11 @@ services:
       POSTGRES_USER: reporter
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
     volumes: [postgres-data:/var/lib/postgresql/data]
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U reporter -d reporter"]
+      interval: 5s
+      timeout: 5s
+      retries: 12
 
   # The app gets read-only Docker metadata/stats, never direct Docker-socket access.
   docker-proxy:

@@ -28,9 +28,37 @@ The all-in-one operations dashboard for Jellyfin. Monitor server health, track a
    docker compose up -d --build
    ```
 
+   Docker waits for PostgreSQL to pass its health check before starting JellyPulse. To see startup state, run `docker compose ps`.
+
 4. On the host machine, open `http://localhost:3000` and complete setup.
 
 The service binds to `127.0.0.1` by default. This deliberately means it is not accessible from another device until you place it behind HTTPS (for example Caddy, Nginx Proxy Manager, or a private VPN such as Tailscale) and change `APP_BIND_ADDRESS` appropriately. Set `SESSION_COOKIE_SECURE=true` when HTTPS is enabled.
+
+## Accessing the dashboard
+
+With the default `APP_BIND_ADDRESS=127.0.0.1`, JellyPulse is reachable only on its host. This is the recommended setting for a public deployment behind Caddy.
+
+To complete first-run setup from another computer without exposing the port, create an SSH tunnel from that computer:
+
+```sh
+ssh -L 3000:127.0.0.1:3000 root@YOUR-LXC-IP
+```
+
+Then open `http://localhost:3000` in the same computer's browser.
+
+For temporary access on a trusted LAN only, set the following in `.env`:
+
+```env
+APP_BIND_ADDRESS=0.0.0.0
+```
+
+Apply it with:
+
+```sh
+docker compose up -d --force-recreate
+```
+
+The dashboard will then be available at `http://YOUR-LXC-IP:3000`. Do **not** leave this enabled when the LXC is publicly reachable. When Caddy is configured, change the value back to `127.0.0.1`, proxy Caddy to `127.0.0.1:3000`, and set `SESSION_COOKIE_SECURE=true`.
 
 ## Jellyfin API key
 
