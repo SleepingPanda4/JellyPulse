@@ -6,8 +6,8 @@ The all-in-one operations dashboard for Jellyfin. Monitor server health, track a
 
 ## What this first release includes
 
-- First-run setup, with a Jellyfin server URL/API key and a separate emergency local administrator account.
-- Jellyfin username/password sign-in. User passwords are passed only to Jellyfin for authentication and are never stored here.
+- First-run setup assigns one existing Jellyfin user as the JellyPulse administrator, alongside the Jellyfin server URL/API key.
+- **Login with Jellyfin** for every user. Passwords are passed only to Jellyfin for authentication and are never stored here.
 - Server-side session cookies (`HttpOnly`, `SameSite=Strict`) and AES-256-GCM encrypted API keys, webhook URLs, and Jellyfin session tokens in PostgreSQL.
 - Playback polling every 30 seconds; the user's latest session is retained for five minutes after it stops.
 - Reports containing the user, item details, device/client, playback timestamp, issue type/description, open/resolved state, submission time, and the preceding five minutes of Jellyfin container metrics.
