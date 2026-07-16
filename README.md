@@ -23,6 +23,7 @@ Current release: **v1.1.0** · See [CHANGELOG.md](CHANGELOG.md) for release hist
 - A compact, private **My Reports** history where each user can select a report to view its playback details, status, and administrator resolution notes.
 - Admin resolution notes and durable Jellyfin popup delivery when the user next opens a compatible active client session.
 - Hamburger navigation ordered as Dashboard, Reports, Users, Report Playback, and Settings for administrators.
+- A persistent administrator Dashboard shortcut in the page header, with a compact mobile presentation, from every non-dashboard workspace.
 - Self-refreshing admin overview with compact five-minute CPU, RAM, and Intel/NVIDIA GPU graphs plus horizontal playback-pipeline bars comparing current direct play, remux, and transcode activity with the five-minute peak.
 - A dashboard queue containing only unresolved reports. Multiple open reports for the same Jellyfin item are grouped with newest-first submitters and expandable individual details.
 - A complete Reports archive sortable through clickable column headings for show or movie, season, episode or item, submit time, user, and issue, with unresolved reports always above resolved reports.
