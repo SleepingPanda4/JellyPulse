@@ -14,6 +14,7 @@ export async function migrate() {
     CREATE TABLE IF NOT EXISTS issues (id bigserial PRIMARY KEY, created_at timestamptz NOT NULL DEFAULT now(), status text NOT NULL DEFAULT 'open', issue_type text NOT NULL, description text NOT NULL, user_id text NOT NULL, username text NOT NULL, playback jsonb NOT NULL, metrics jsonb NOT NULL);
     CREATE TABLE IF NOT EXISTS access_links (id uuid PRIMARY KEY, user_id text NOT NULL, username text NOT NULL, label text NOT NULL, token_hash text UNIQUE NOT NULL, created_at timestamptz NOT NULL DEFAULT now(), expires_at timestamptz, revoked_at timestamptz, last_used_at timestamptz);
     CREATE INDEX IF NOT EXISTS access_links_token_hash_idx ON access_links(token_hash);
+    CREATE TABLE IF NOT EXISTS notification_destinations (id uuid PRIMARY KEY, type text NOT NULL, label text NOT NULL, config text NOT NULL, enabled boolean NOT NULL DEFAULT true, created_at timestamptz NOT NULL DEFAULT now(), last_sent_at timestamptz, last_error text);
   `);
 }
 export async function getSetting(key: string) { return (await db.query('SELECT value FROM settings WHERE key=$1', [key])).rows[0]?.value as string | undefined; }

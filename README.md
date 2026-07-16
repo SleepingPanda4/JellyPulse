@@ -16,12 +16,18 @@ The all-in-one operations dashboard for Jellyfin. Monitor server health, track a
 - Server-side session cookies (`HttpOnly`, `SameSite=Strict`) and AES-256-GCM encrypted API keys, webhook URLs, and Jellyfin session tokens in PostgreSQL.
 - Playback polling every 30 seconds; the user's latest session is retained for five minutes after it stops.
 - Reports containing the user, item details, device/client, playback timestamp, issue type/description, open/resolved state, submission time, and the preceding five minutes of Jellyfin container metrics.
-- Admin dashboard with active/recent viewers, CPU history, a sortable-ready issue queue, resolution control, and Discord-compatible webhook notifications.
+- Admin dashboard with active/recent viewers, CPU history, a sortable-ready issue queue, resolution control, and multiple notification destinations.
 - Revocable pre-authenticated reporting links with optional expiration. Raw 256-bit link tokens are shown once and only SHA-256 hashes are stored; link sessions never receive administrator access.
 
 ### Private reporting links
 
 An administrator can create a private link for any enabled Jellyfin user from the dashboard. The user can bookmark that link and open it instead of entering a password. Tokens are placed in the URL fragment so they are not sent in HTTP request paths or referrer headers. Treat each link like a password: send it privately, give shared-device links an expiration date, and revoke a link immediately if it is exposed. Disabling the Jellyfin user also prevents the link from being used.
+
+### Notification destinations
+
+JellyPulse can notify multiple destinations for every submitted issue. Supported providers are Home Assistant, SMTP email, Discord, Slack, ntfy, Gotify, Telegram, Pushover, generic JSON webhooks, and an Apprise API bridge for additional services. Each destination can be tested, disabled, or deleted independently; credentials are AES-256-GCM encrypted in PostgreSQL and are never returned to the browser after saving.
+
+For Home Assistant, create a long-lived access token from the Home Assistant user profile and enter the `notify` service suffix, such as `mobile_app_your_phone`. JellyPulse calls `/api/services/notify/{service}`. For email, use the SMTP values supplied by the mail provider. Apprise users can connect a self-hosted Apprise API instance and provide one or more Apprise notification URLs.
 
 ## Start it
 
@@ -87,7 +93,6 @@ The compose stack uses a narrowly-permissioned Docker socket proxy instead of gi
 
 ## Next additions
 
-- Multiple named notification destinations (Discord, Slack, email, Gotify, ntfy).
 - GPU collector and more complete CPU/RAM dashboards.
 - Issue filtering by type/date/status and CSV export.
 - A QR-code landing link and a Jellyfin dashboard link/plugin.
