@@ -16,8 +16,8 @@ Current release: **v1.1.0** · See [CHANGELOG.md](CHANGELOG.md) for release hist
 - After first-run setup completes, JellyPulse returns to the login screen so the administrator signs in through the same Jellyfin flow as every other user.
 - **Login with Jellyfin** for every user. Passwords are passed only to Jellyfin for authentication and are never stored here.
 - Server-side session cookies (`HttpOnly`, `SameSite=Strict`) and AES-256-GCM encrypted API keys, notification credentials, and Jellyfin session tokens in PostgreSQL.
-- Playback polling every 30 seconds; the user's latest session is retained for five minutes after it stops.
-- Reports containing the user, item details, device/client, playback timestamp, issue type/description, open/resolved state, submission time, and the preceding five minutes of Jellyfin container metrics.
+- Playback polling every 30 seconds; the user's latest observed item and position are retained as a reporting fallback after playback stops.
+- Reports containing the user, item details, device/client, live playback time or last-known position, current/recent source, issue type/description, open/resolved state, submission time, and the preceding five minutes of Jellyfin container metrics.
 - A private **My Reports** history where each user can track their open and resolved reports and read administrator resolution notes.
 - Admin resolution notes and durable Jellyfin popup delivery when the user next opens a compatible active client session.
 - Self-refreshing admin dashboard with active/recent viewers, CPU history, a recent issue queue, resolution and popup-delivery status, and multiple notification destinations.
@@ -49,6 +49,8 @@ Resolving a report opens an optional resolution-note dialog. JellyPulse saves th
 This is an in-app Jellyfin message, not a background mobile push notification. The Jellyfin app must be open and connected, and client support varies. Unsupported clients leave the message queued while **My Reports** remains the permanent and reliable record. JellyPulse sends at most one queued resolution per user during each poll so several completed reports do not overwrite one another on the same client. Reopening a report cancels any queued popup and clears its resolution note.
 
 The administrator overview, viewer list, metrics, issue queue, and popup status refresh automatically every 10 seconds while the dashboard tab is visible. Returning to a previously hidden tab triggers an immediate refresh, and overlapping dashboard requests are suppressed.
+
+When a report is submitted, JellyPulse first requests the user's active Jellyfin sessions and captures the most recently active session's playback position. If nothing is playing, it attaches the last item JellyPulse observed for that user, including its last-known position and observation time. The dashboard, My Reports, and outgoing issue notifications label the fallback as **most recently watched** so it is not mistaken for live playback.
 
 ## Requirements
 

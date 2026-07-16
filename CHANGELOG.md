@@ -12,6 +12,7 @@ All notable JellyPulse changes are documented here.
 - A private My Reports history with report status, resolution timestamps, and administrator notes.
 - Durable resolution-message queues that send Jellyfin popups to the user's next compatible active client and track delivery status.
 - Visibility-aware admin dashboard refresh every 10 seconds, with immediate refresh when returning to the tab.
+- Live playback-position capture at report submission with a clearly labeled most-recently-watched fallback when the user is no longer playing anything.
 
 ### Changed
 
