@@ -17,6 +17,8 @@ All notable JellyPulse changes are documented here.
 - Hamburger navigation with separate Dashboard, Report Issue, Users, and Settings pages.
 - User management summaries, persistent observed watch history, per-user filtering, most-recently-watched media, most-watched media, and report totals.
 - Secure Jellyfin host/API-key reconfiguration with administrator reauthentication and no API-key disclosure.
+- Category-specific quick-report options with an optional free-form description.
+- An administrator report-detail popup showing playback percentage, report contents, playback metadata, captured CPU/GPU load, and resolution actions.
 
 ### Changed
 

@@ -15,6 +15,7 @@ export async function migrate() {
     CREATE INDEX IF NOT EXISTS watch_history_item_idx ON watch_history(user_id, item_id);
     CREATE TABLE IF NOT EXISTS metric_samples (id bigserial PRIMARY KEY, captured_at timestamptz NOT NULL DEFAULT now(), cpu_percent numeric, memory_bytes bigint, memory_limit bigint, gpu_percent numeric);
     CREATE TABLE IF NOT EXISTS issues (id bigserial PRIMARY KEY, created_at timestamptz NOT NULL DEFAULT now(), status text NOT NULL DEFAULT 'open', issue_type text NOT NULL, description text NOT NULL, user_id text NOT NULL, username text NOT NULL, playback jsonb NOT NULL, metrics jsonb NOT NULL);
+    ALTER TABLE issues ADD COLUMN IF NOT EXISTS issue_detail text;
     ALTER TABLE issues ADD COLUMN IF NOT EXISTS resolved_at timestamptz;
     ALTER TABLE issues ADD COLUMN IF NOT EXISTS resolution_note text;
     CREATE TABLE IF NOT EXISTS issue_resolution_notifications (id bigserial PRIMARY KEY, issue_id bigint UNIQUE NOT NULL REFERENCES issues(id) ON DELETE CASCADE, user_id text NOT NULL, created_at timestamptz NOT NULL DEFAULT now(), delivered_at timestamptz, delivery_session_id text, last_attempt_at timestamptz, last_error text);

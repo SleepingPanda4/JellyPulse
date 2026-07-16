@@ -17,12 +17,14 @@ Current release: **v1.1.0** · See [CHANGELOG.md](CHANGELOG.md) for release hist
 - **Login with Jellyfin** for every user. Passwords are passed only to Jellyfin for authentication and are never stored here.
 - Server-side session cookies (`HttpOnly`, `SameSite=Strict`) and AES-256-GCM encrypted API keys, notification credentials, and Jellyfin session tokens in PostgreSQL.
 - Playback polling every 30 seconds; the user's latest observed item and position are retained as a reporting fallback after playback stops.
-- Reports containing the user, item details, device/client, live playback time or last-known position, current/recent source, issue type/description, open/resolved state, submission time, and the preceding five minutes of Jellyfin container metrics.
+- Streamlined reporting with category-specific choices such as **Playback stopped**, **Glitching or artifacts**, **Wrong language**, and **Wrong timing**; a written description is optional.
+- Reports containing the user, item details, device/client, live playback time or last-known position, playback percentage, current/recent source, issue category/preset/optional notes, open/resolved state, submission time, and the preceding five minutes of Jellyfin container metrics.
 - A private **My Reports** history where each user can track their open and resolved reports and read administrator resolution notes.
 - Admin resolution notes and durable Jellyfin popup delivery when the user next opens a compatible active client session.
 - Hamburger navigation with focused Dashboard, Report Issue, Users, and Settings pages instead of placing every administrator control on the overview.
 - Self-refreshing admin dashboard with active viewer cards, playback progress bars, CPU history, and open-report totals.
 - A Users workspace with Jellyfin account status, most recently watched media, approximate observed watch time, most-watched title or series, watch history, user reports, reporting links, and one-time account invitations.
+- A report-detail popup in the administrator issue queue with playback progress, the exact reported problem, optional notes, device/client metadata, captured system load, and resolution actions.
 - A Settings workspace for securely changing the Jellyfin connection and managing notification destinations.
 - Live playback progress under **Report a playback issue**, including elapsed time, total runtime, and percentage watched.
 - One-time Jellyfin account invitations that expire after 30 minutes, 1 hour, 1 day, or 7 days.
