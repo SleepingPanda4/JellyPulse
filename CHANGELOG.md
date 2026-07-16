@@ -14,11 +14,16 @@ All notable JellyPulse changes are documented here.
 - Visibility-aware admin dashboard refresh every 10 seconds, with immediate refresh when returning to the tab.
 - Live playback-position capture at report submission with a clearly labeled most-recently-watched fallback when the user is no longer playing anything.
 - Active-session viewer cards under JellyPulse Overview and auto-refreshing playback progress bars on both the overview and report form.
+- Hamburger navigation with separate Dashboard, Report Issue, Users, and Settings pages.
+- User management summaries, persistent observed watch history, per-user filtering, most-recently-watched media, most-watched media, and report totals.
+- Secure Jellyfin host/API-key reconfiguration with administrator reauthentication and no API-key disclosure.
 
 ### Changed
 
 - Expanded installation, remote Jellyfin, Caddy, upgrade, backup, security, and troubleshooting documentation.
 - Made `SESSION_COOKIE_SECURE` configurable through `.env` as documented.
+- Moved user reports, account invitations, and pre-authenticated reporting links from the dashboard to the Users page.
+- Moved notification destinations from the dashboard to the Settings page.
 
 ## [1.1.0] - 2026-07-15
 

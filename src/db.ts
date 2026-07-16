@@ -10,6 +10,9 @@ export async function migrate() {
     CREATE TABLE IF NOT EXISTS settings (key text PRIMARY KEY, value text NOT NULL);
     CREATE TABLE IF NOT EXISTS sessions (id uuid PRIMARY KEY, user_id text NOT NULL, username text NOT NULL, is_admin boolean NOT NULL DEFAULT false, token text NOT NULL, expires_at timestamptz NOT NULL);
     CREATE TABLE IF NOT EXISTS recent_playback (user_id text PRIMARY KEY, username text NOT NULL, payload jsonb NOT NULL, last_seen timestamptz NOT NULL);
+    CREATE TABLE IF NOT EXISTS watch_history (id bigserial PRIMARY KEY, user_id text NOT NULL, username text NOT NULL, item_id text NOT NULL, payload jsonb NOT NULL, started_at timestamptz NOT NULL DEFAULT now(), last_seen timestamptz NOT NULL DEFAULT now(), observed_seconds integer NOT NULL DEFAULT 0);
+    CREATE INDEX IF NOT EXISTS watch_history_user_seen_idx ON watch_history(user_id, last_seen DESC);
+    CREATE INDEX IF NOT EXISTS watch_history_item_idx ON watch_history(user_id, item_id);
     CREATE TABLE IF NOT EXISTS metric_samples (id bigserial PRIMARY KEY, captured_at timestamptz NOT NULL DEFAULT now(), cpu_percent numeric, memory_bytes bigint, memory_limit bigint, gpu_percent numeric);
     CREATE TABLE IF NOT EXISTS issues (id bigserial PRIMARY KEY, created_at timestamptz NOT NULL DEFAULT now(), status text NOT NULL DEFAULT 'open', issue_type text NOT NULL, description text NOT NULL, user_id text NOT NULL, username text NOT NULL, playback jsonb NOT NULL, metrics jsonb NOT NULL);
     ALTER TABLE issues ADD COLUMN IF NOT EXISTS resolved_at timestamptz;

@@ -20,26 +20,31 @@ Current release: **v1.1.0** · See [CHANGELOG.md](CHANGELOG.md) for release hist
 - Reports containing the user, item details, device/client, live playback time or last-known position, current/recent source, issue type/description, open/resolved state, submission time, and the preceding five minutes of Jellyfin container metrics.
 - A private **My Reports** history where each user can track their open and resolved reports and read administrator resolution notes.
 - Admin resolution notes and durable Jellyfin popup delivery when the user next opens a compatible active client session.
-- Self-refreshing admin dashboard with active viewer cards, playback progress bars, CPU history, a recent issue queue, resolution and popup-delivery status, and multiple notification destinations.
+- Hamburger navigation with focused Dashboard, Report Issue, Users, and Settings pages instead of placing every administrator control on the overview.
+- Self-refreshing admin dashboard with active viewer cards, playback progress bars, CPU history, and open-report totals.
+- A Users workspace with Jellyfin account status, most recently watched media, approximate observed watch time, most-watched title or series, watch history, user reports, reporting links, and one-time account invitations.
+- A Settings workspace for securely changing the Jellyfin connection and managing notification destinations.
 - Live playback progress under **Report a playback issue**, including elapsed time, total runtime, and percentage watched.
 - One-time Jellyfin account invitations that expire after 30 minutes, 1 hour, 1 day, or 7 days.
 - Revocable pre-authenticated reporting links with optional expiration. Raw 256-bit link tokens are shown once and only SHA-256 hashes are stored; link sessions never receive administrator access.
 
 ### Jellyfin user invitations
 
-An administrator can create a one-time account invitation from the JellyPulse dashboard. The recipient opens the private link and chooses a Jellyfin username and password; JellyPulse then creates a standard, non-administrator user directly in Jellyfin. After Jellyfin confirms creation, the invitation is permanently deleted and cannot be reused.
+An administrator can create a one-time account invitation from **Users → User invitations**. The recipient opens the private link and chooses a Jellyfin username and password; JellyPulse then creates a standard, non-administrator user directly in Jellyfin. After Jellyfin confirms creation, the invitation is permanently deleted and cannot be reused.
 
-Invitations can last only 30 minutes, 1 hour, 1 day, or 7 days. There is deliberately no permanent option. Each link contains a random 256-bit token in its URL fragment, while JellyPulse stores only its SHA-256 hash. The raw invitation is shown only when it is created, so copy it before leaving or refreshing the page. An administrator can revoke any unused invitation from the dashboard.
+Invitations can last only 30 minutes, 1 hour, 1 day, or 7 days. There is deliberately no permanent option. Each link contains a random 256-bit token in its URL fragment, while JellyPulse stores only its SHA-256 hash. The raw invitation is shown only when it is created, so copy it before leaving or refreshing the page. An administrator can revoke any unused invitation from the Users page.
 
 Jellyfin controls the new account's library access and other user policy. Review the account under Jellyfin Dashboard → Users after creation if it needs restricted libraries, playback limits, or other permissions. The recipient can immediately use **Login with Jellyfin** in JellyPulse after creating the account.
 
 ### Private reporting links
 
-An administrator can create a private link for any enabled Jellyfin user from the dashboard. The user can bookmark that link and open it instead of entering a password. Tokens are placed in the URL fragment so they are not sent in HTTP request paths or referrer headers. Treat each link like a password: send it privately, give shared-device links an expiration date, and revoke a link immediately if it is exposed. Disabling the Jellyfin user also prevents the link from being used.
+An administrator can create a private link for any enabled Jellyfin user under **Users → Reporting links**. The user can bookmark that link and open it instead of entering a password. Tokens are placed in the URL fragment so they are not sent in HTTP request paths or referrer headers. Treat each link like a password: send it privately, give shared-device links an expiration date, and revoke a link immediately if it is exposed. Disabling the Jellyfin user also prevents the link from being used.
 
 ### Notification destinations
 
 JellyPulse can notify multiple destinations for every submitted issue. Supported providers are Home Assistant, SMTP email, Discord, Slack, ntfy, Gotify, Telegram, Pushover, generic JSON webhooks, and an Apprise API bridge for additional services. Each destination can be edited in a popup, tested, disabled, or deleted independently. Existing secrets stay encrypted when an edit field is left blank; credentials are never returned to the browser after saving.
+
+Notification management is under **Settings → Notifications**. **Settings → Jellyfin configuration** can change the Jellyfin host and API key. JellyPulse never displays the saved API key, permits leaving the key field blank to retain it, and requires the signed-in administrator's Jellyfin password to validate the proposed connection before saving. That password is sent only to Jellyfin and is never stored.
 
 For Home Assistant, create a long-lived access token from the Home Assistant user profile and enter the `notify` service suffix, such as `mobile_app_your_phone`. JellyPulse calls `/api/services/notify/{service}`. For email, use the SMTP values supplied by the mail provider. Apprise users can connect a separately deployed Apprise API instance and provide one or more Apprise notification URLs; Apprise API is not bundled in this Compose stack.
 
@@ -49,11 +54,15 @@ Resolving a report opens an optional resolution-note dialog. JellyPulse saves th
 
 This is an in-app Jellyfin message, not a background mobile push notification. The Jellyfin app must be open and connected, and client support varies. Unsupported clients leave the message queued while **My Reports** remains the permanent and reliable record. JellyPulse sends at most one queued resolution per user during each poll so several completed reports do not overwrite one another on the same client. Reopening a report cancels any queued popup and clears its resolution note.
 
-The administrator overview, viewer list, metrics, issue queue, and popup status refresh automatically every 10 seconds while the dashboard tab is visible. Returning to a previously hidden tab triggers an immediate refresh, and overlapping dashboard requests are suppressed.
+The administrator overview and visible user-report queue refresh automatically every 10 seconds. Returning to a previously hidden browser tab triggers an immediate refresh, and overlapping requests are suppressed.
 
 When a report is submitted, JellyPulse first requests the user's active Jellyfin sessions and captures the most recently active session's playback position. If nothing is playing, it attaches the last item JellyPulse observed for that user, including its last-known position and observation time. The dashboard, My Reports, and outgoing issue notifications label the fallback as **most recently watched** so it is not mistaken for live playback.
 
 The overview's **Currently watching** section uses live Jellyfin sessions rather than the five-minute reporting fallback. Each viewer card shows the user, title, device/client, elapsed time, total runtime, percentage watched, and a progress bar. The report page refreshes its own playback card every 10 seconds. Items without a known runtime, such as some live streams, show elapsed time with an unavailable total instead of an inaccurate percentage.
+
+### Watch history and user statistics
+
+JellyPulse begins building its own watch history after this feature is installed. The existing 30-second Jellyfin session poll records active items, groups observations of the same user and item into a watch session until there is a ten-minute gap, and does not add observed time while Jellyfin reports playback as paused. The Users page derives recent media, most-watched media, and observed watch time from these records. These values are operational estimates rather than Jellyfin billing-grade analytics, and playback from before the migration is not reconstructed.
 
 ## Requirements
 
