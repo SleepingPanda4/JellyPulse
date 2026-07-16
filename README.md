@@ -19,13 +19,13 @@ Current release: **v1.1.0** · See [CHANGELOG.md](CHANGELOG.md) for release hist
 - Playback polling every 30 seconds; the user's latest observed item and position are retained as a reporting fallback after playback stops.
 - Streamlined reporting with category-specific choices such as **Playback stopped**, **Glitching or artifacts**, **Wrong language**, and **Wrong timing**; a written description is optional.
 - A **Not this item** library picker that searches accessible Jellyfin movies and shows, then provides stacked season and episode selectors for a series.
-- Reports containing the user, item details, device/client, live playback time or last-known position, playback percentage, current/recent source, issue category/preset/optional notes, open/resolved state, submission time, and the preceding five minutes of Jellyfin container metrics.
+- Reports containing the user, item details, device/client, live playback time or last-known position, playback percentage, current/recent source, issue category/preset/optional notes, open/resolved state, submission time, and the preceding five minutes of CPU, RAM, optional GPU, and playback-pipeline telemetry.
 - A private **My Reports** history where each user can track their open and resolved reports and read administrator resolution notes.
 - Admin resolution notes and durable Jellyfin popup delivery when the user next opens a compatible active client session.
 - Hamburger navigation with focused Dashboard, Report Issue, Users, and Settings pages instead of placing every administrator control on the overview.
 - Self-refreshing admin dashboard with active viewer cards, playback progress bars, CPU history, and open-report totals.
 - A Users workspace with Jellyfin account status, most recently watched media, approximate observed watch time, most-watched title or series, watch history, user reports, reporting links, and one-time account invitations.
-- A report-detail popup in the administrator issue queue with playback progress, the exact reported problem, optional notes, device/client metadata, captured system load, and resolution actions.
+- A report-detail popup with playback progress, the exact reported problem, five-minute CPU/RAM/GPU and direct-play/remux/transcode graphs, active transcode details, and resolution actions.
 - A Settings workspace for securely changing the Jellyfin connection and managing notification destinations.
 - Live playback progress under **Report a playback issue**, including elapsed time, total runtime, and percentage watched.
 - One-time Jellyfin account invitations that expire after 30 minutes, 1 hour, 1 day, or 7 days.
@@ -182,7 +182,18 @@ In Jellyfin, create a dedicated API key for this service rather than reusing one
 
 ## Metrics and GPU support
 
-The compose stack uses a narrowly-permissioned Docker socket proxy instead of giving the application the Docker socket. It can read Jellyfin container CPU and memory samples every 30 seconds. Docker Engine does not expose NVIDIA utilization in that endpoint, so GPU utilization is represented in the schema but requires a small follow-up integration with an NVIDIA DCGM exporter or a host metrics agent. This is intentionally left disabled rather than granting broad host privileges.
+The compose stack uses a narrowly permissioned Docker socket proxy instead of giving the application the Docker socket. It reads Jellyfin container CPU and memory every 30 seconds. During the same sample JellyPulse reads active Jellyfin sessions and records direct-play, remux, and transcode counts plus codec, container, resolution, bitrate, framerate, hardware-acceleration type, completion, and transcode reasons. These samples are embedded into each report so its diagnostic graphs do not change later.
+
+Docker Engine does not expose GPU utilization through container stats. JellyPulse therefore accepts an optional Prometheus-format Intel or NVIDIA GPU exporter without granting Docker exec or host-device access to the application. Set these values in `.env` and recreate the application container:
+
+```env
+GPU_METRICS_URL=http://gpu-exporter:9400/metrics
+GPU_METRIC_NAME=DCGM_FI_DEV_GPU_UTIL
+GPU_METRIC_SCALE=1
+GPU_METRICS_VENDOR=NVIDIA
+```
+
+`GPU_METRIC_NAME` is the exact Prometheus metric containing utilization. JellyPulse automatically recognizes `DCGM_FI_DEV_GPU_UTIL`, `nvidia_gpu_utilization`, `intel_gpu_usage_percent`, `intel_gpu_engine_busy_percent`, and `igpu_engine_busy_percent`; explicitly set the name when the exporter uses something else. Set `GPU_METRIC_SCALE=100` if the exporter reports a 0–1 ratio instead of 0–100 percent. For Intel, use the metric name and port supplied by the installed Intel GPU exporter and set `GPU_METRICS_VENDOR=Intel`. The exporter URL must be reachable from the JellyPulse container. If it is omitted or unavailable, reports still include CPU, RAM, and transcode telemetry while GPU is shown as unavailable.
 
 ## Before exposing it to users
 
@@ -308,7 +319,7 @@ To intentionally erase JellyPulse and rerun first setup, use `docker compose dow
 
 ## Next additions
 
-- GPU collector and more complete CPU/RAM dashboards.
+- Optional remote CPU/RAM agent support when Jellyfin is not on the same Docker host.
 - Configurable metrics and issue retention policies.
 - Issue filtering by type/date/status and CSV export.
 - A QR-code landing link and a Jellyfin dashboard link/plugin.

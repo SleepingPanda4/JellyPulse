@@ -15,6 +15,10 @@ services:
       SESSION_COOKIE_SECURE: ${SESSION_COOKIE_SECURE:-false}
       DOCKER_HOST: tcp://docker-proxy:2375
       JELLYFIN_CONTAINER_NAME: ${JELLYFIN_CONTAINER_NAME:-jellyfin}
+      GPU_METRICS_URL: ${GPU_METRICS_URL:-}
+      GPU_METRIC_NAME: ${GPU_METRIC_NAME:-}
+      GPU_METRIC_SCALE: ${GPU_METRIC_SCALE:-1}
+      GPU_METRICS_VENDOR: ${GPU_METRICS_VENDOR:-}
     depends_on:
       db:
         condition: service_healthy

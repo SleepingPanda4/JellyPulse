@@ -20,6 +20,8 @@ All notable JellyPulse changes are documented here.
 - Category-specific quick-report options with an optional free-form description.
 - An administrator report-detail popup showing playback percentage, report contents, playback metadata, captured CPU/GPU load, and resolution actions.
 - A user-scoped Jellyfin library search with a **Not this item** override and stacked show, season, and episode selection.
+- Five-minute report diagnostics for CPU, RAM, optional Intel/NVIDIA GPU exporters, and direct-play/remux/transcode activity.
+- Report popup graphs and latest-stream details including codecs, resolution, bitrate, framerate, hardware acceleration, completion, and transcode reasons.
 
 ### Changed
 
