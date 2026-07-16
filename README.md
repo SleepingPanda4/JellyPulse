@@ -20,7 +20,7 @@ Current release: **v1.1.0** · See [CHANGELOG.md](CHANGELOG.md) for release hist
 - Streamlined reporting with category-specific choices such as **Playback stopped**, **Glitching or artifacts**, **Wrong language**, and **Wrong timing**; a written description is optional.
 - A **Not this item** library picker that searches accessible Jellyfin movies and shows, then provides stacked season and episode selectors for a series.
 - Reports containing the user, item details, device/client, live playback time or last-known position, playback percentage, current/recent source, issue category/preset/optional notes, open/resolved state, submission time, and the preceding five minutes of CPU, RAM, optional GPU, and playback-pipeline telemetry.
-- A private **My Reports** history where each user can track their open and resolved reports and read administrator resolution notes.
+- A compact, private **My Reports** history where each user can select a report to view its playback details, status, and administrator resolution notes.
 - Admin resolution notes and durable Jellyfin popup delivery when the user next opens a compatible active client session.
 - Hamburger navigation ordered as Dashboard, Reports, Users, Report Playback, and Settings for administrators.
 - Self-refreshing admin overview with compact five-minute CPU, RAM, and Intel/NVIDIA GPU graphs plus horizontal playback-pipeline bars comparing current direct play, remux, and transcode activity with the five-minute peak.
