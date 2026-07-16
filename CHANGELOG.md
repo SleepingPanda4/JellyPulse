@@ -24,6 +24,7 @@ All notable JellyPulse changes are documented here.
 - Report popup graphs and latest-stream details including codecs, resolution, bitrate, framerate, hardware acceleration, completion, and transcode reasons.
 - A compact five-minute overview for CPU, RAM, optional Intel/NVIDIA GPU usage, and direct-play/remux/transcode activity.
 - Ten-second dashboard and metric refreshes with overlap protection for slower collectors.
+- A dashboard report queue sortable by show or movie, submission time, and resolved status, with full report details loaded on demand.
 
 ### Changed
 
