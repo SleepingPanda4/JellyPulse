@@ -26,6 +26,7 @@ All notable JellyPulse changes are documented here.
 - Ten-second dashboard and metric refreshes with overlap protection for slower collectors.
 - A dashboard report queue sortable by show or movie, submission time, and resolved status, with full report details loaded on demand.
 - Automatic grouping of multiple unresolved reports for the same Jellyfin item, including newest-first submitters and expandable individual report rows.
+- A dedicated Reports page with sorting by title, season, item, submit time, user, or issue while always prioritizing unresolved reports.
 
 ### Changed
 
@@ -33,6 +34,7 @@ All notable JellyPulse changes are documented here.
 - Made `SESSION_COOKIE_SECURE` configurable through `.env` as documented.
 - Moved user reports, account invitations, and pre-authenticated reporting links from the dashboard to the Users page.
 - Moved notification destinations from the dashboard to the Settings page.
+- Limited the dashboard queue to unresolved reports; resolved reports remain available in the complete Reports archive.
 
 ## [1.1.0] - 2026-07-15
 
