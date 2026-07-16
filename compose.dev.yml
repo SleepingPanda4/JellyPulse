@@ -6,7 +6,7 @@ services:
       context: .
       dockerfile: Dockerfile.dev
     restart: unless-stopped
-    ports: ["${DEV_APP_BIND_ADDRESS:-127.0.0.1}:${DEV_APP_PORT:-3001}:3000"]
+    ports: ["${DEV_APP_BIND_ADDRESS:-0.0.0.0}:${DEV_APP_PORT:-3000}:3000"]
     environment:
       PGHOST: db
       PGPORT: 5432
@@ -14,7 +14,7 @@ services:
       PGPASSWORD: ${DEV_POSTGRES_PASSWORD}
       PGDATABASE: reporter_dev
       APP_ENCRYPTION_KEY: ${DEV_APP_ENCRYPTION_KEY}
-      SESSION_COOKIE_SECURE: ${DEV_SESSION_COOKIE_SECURE:-false}
+      SESSION_COOKIE_SECURE: ${DEV_SESSION_COOKIE_SECURE:-true}
       DOCKER_HOST: tcp://docker-proxy:2375
       JELLYFIN_CONTAINER_NAME: ${JELLYFIN_CONTAINER_NAME:-jellyfin}
       NODE_ENV: development

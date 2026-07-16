@@ -188,7 +188,9 @@ docker compose up -d --build
 
 ## Isolated development stack
 
-Development should run from the `develop` branch in a separate checkout. The included `compose.dev.yml` uses the fixed Compose project name `jellypulse-dev`, port `3001`, a separate PostgreSQL database/volume, a separate encryption key, and its own containers. It does not read or migrate the production JellyPulse database. The application source is mounted into the container and `tsx watch` restarts it when files change.
+Development should run from the `develop` branch in a separate checkout. The included `compose.dev.yml` uses the fixed Compose project name `jellypulse-dev`, port `3000`, a separate PostgreSQL database/volume, a separate encryption key, and its own containers. It does not read or migrate the production JellyPulse database. The application source is mounted into the container and `tsx watch` restarts it when files change.
+
+The development example binds port 3000 to `0.0.0.0` so a Caddy instance on another host can reach it. Production and development therefore cannot run at the same time with the default configuration. Stop production before starting development, and stop development before returning to production. Restrict port 3000 so only the Caddy host or trusted LAN can reach it.
 
 Clone and start it alongside production:
 
@@ -201,18 +203,32 @@ docker compose --env-file .env.dev -f compose.dev.yml up -d --build
 docker compose --env-file .env.dev -f compose.dev.yml ps
 ```
 
-Generate a new development encryption key with `openssl rand -base64 32`. Do not copy the production database password or encryption key. With the default localhost binding, access the development site through a separate SSH tunnel:
+Generate a new development encryption key with `openssl rand -base64 32`. Do not copy the production database password or encryption key. Before starting development, stop production so it releases port 3000:
 
 ```sh
-ssh -L 3001:127.0.0.1:3001 root@YOUR-LXC-IP
+cd /opt/jellypulse
+docker compose stop app
+
+cd /opt/jellypulse-dev
+docker compose --env-file .env.dev -f compose.dev.yml up -d --build
 ```
 
-Then open `http://localhost:3001`. Development has its own first-run setup and administrator session. To follow logs or stop only development:
+Open the existing Caddy HTTPS address. Keep `DEV_SESSION_COOKIE_SECURE=true` for Caddy. If you instead use `http://YOUR-LXC-IP:3000` on a trusted LAN, set it to `false` and recreate the development app. Development has its own first-run setup and administrator session. To follow logs or stop only development:
 
 ```sh
 cd /opt/jellypulse-dev
 docker compose --env-file .env.dev -f compose.dev.yml logs -f app
 docker compose --env-file .env.dev -f compose.dev.yml down
+```
+
+To return to production:
+
+```sh
+cd /opt/jellypulse-dev
+docker compose --env-file .env.dev -f compose.dev.yml down
+
+cd /opt/jellypulse
+docker compose up -d app
 ```
 
 The normal `down` command preserves the development database. Add `-v` only when you intentionally want to erase the development environment and repeat first-run setup.
@@ -226,7 +242,7 @@ git switch develop
 git push -u origin develop
 ```
 
-Production remains on `main` under `/opt/jellypulse`. Merge a tested release into `main` only when you are ready to deploy it.
+Production remains on `main` under `/opt/jellypulse`. Merge a tested release into `main` only when you are ready to deploy it. The two databases remain isolated even though the stacks alternate on the same external port.
 
 ## Backup
 
