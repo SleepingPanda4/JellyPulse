@@ -23,7 +23,7 @@ Current release: **v1.1.0** · See [CHANGELOG.md](CHANGELOG.md) for release hist
 - A private **My Reports** history where each user can track their open and resolved reports and read administrator resolution notes.
 - Admin resolution notes and durable Jellyfin popup delivery when the user next opens a compatible active client session.
 - Hamburger navigation with focused Dashboard, Report Issue, Users, and Settings pages instead of placing every administrator control on the overview.
-- Self-refreshing admin dashboard with active viewer cards, playback progress bars, CPU history, and open-report totals.
+- Self-refreshing admin overview with compact CPU, RAM, Intel/NVIDIA GPU, and playback-pipeline graphs for the last five minutes alongside active viewer cards and playback progress.
 - A Users workspace with Jellyfin account status, most recently watched media, approximate observed watch time, most-watched title or series, watch history, user reports, reporting links, and one-time account invitations.
 - A report-detail popup with playback progress, the exact reported problem, five-minute CPU/RAM/GPU and direct-play/remux/transcode graphs, active transcode details, and resolution actions.
 - A Settings workspace for securely changing the Jellyfin connection and managing notification destinations.
@@ -182,7 +182,7 @@ In Jellyfin, create a dedicated API key for this service rather than reusing one
 
 ## Metrics and GPU support
 
-The compose stack uses a narrowly permissioned Docker socket proxy instead of giving the application the Docker socket. It reads Jellyfin container CPU and memory every 30 seconds. During the same sample JellyPulse reads active Jellyfin sessions and records direct-play, remux, and transcode counts plus codec, container, resolution, bitrate, framerate, hardware-acceleration type, completion, and transcode reasons. These samples are embedded into each report so its diagnostic graphs do not change later.
+The compose stack uses a narrowly permissioned Docker socket proxy instead of giving the application the Docker socket. It reads Jellyfin container CPU and memory every 10 seconds. During the same sample JellyPulse reads active Jellyfin sessions and records direct-play, remux, and transcode counts plus codec, container, resolution, bitrate, framerate, hardware-acceleration type, completion, and transcode reasons. The overview shows the latest five-minute window and refreshes every 10 seconds. These samples are also embedded into each report so its diagnostic graphs do not change later.
 
 Docker Engine does not expose GPU utilization through container stats. JellyPulse therefore accepts an optional Prometheus-format Intel or NVIDIA GPU exporter without granting Docker exec or host-device access to the application. Set these values in `.env` and recreate the application container:
 
