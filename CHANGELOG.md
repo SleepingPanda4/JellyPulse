@@ -13,6 +13,7 @@ All notable JellyPulse changes are documented here.
 - Durable resolution-message queues that send Jellyfin popups to the user's next compatible active client and track delivery status.
 - Visibility-aware admin dashboard refresh every 10 seconds, with immediate refresh when returning to the tab.
 - Live playback-position capture at report submission with a clearly labeled most-recently-watched fallback when the user is no longer playing anything.
+- Active-session viewer cards under JellyPulse Overview and auto-refreshing playback progress bars on both the overview and report form.
 
 ### Changed
 

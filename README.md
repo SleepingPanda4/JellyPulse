@@ -20,7 +20,8 @@ Current release: **v1.1.0** · See [CHANGELOG.md](CHANGELOG.md) for release hist
 - Reports containing the user, item details, device/client, live playback time or last-known position, current/recent source, issue type/description, open/resolved state, submission time, and the preceding five minutes of Jellyfin container metrics.
 - A private **My Reports** history where each user can track their open and resolved reports and read administrator resolution notes.
 - Admin resolution notes and durable Jellyfin popup delivery when the user next opens a compatible active client session.
-- Self-refreshing admin dashboard with active/recent viewers, CPU history, a recent issue queue, resolution and popup-delivery status, and multiple notification destinations.
+- Self-refreshing admin dashboard with active viewer cards, playback progress bars, CPU history, a recent issue queue, resolution and popup-delivery status, and multiple notification destinations.
+- Live playback progress under **Report a playback issue**, including elapsed time, total runtime, and percentage watched.
 - One-time Jellyfin account invitations that expire after 30 minutes, 1 hour, 1 day, or 7 days.
 - Revocable pre-authenticated reporting links with optional expiration. Raw 256-bit link tokens are shown once and only SHA-256 hashes are stored; link sessions never receive administrator access.
 
@@ -51,6 +52,8 @@ This is an in-app Jellyfin message, not a background mobile push notification. T
 The administrator overview, viewer list, metrics, issue queue, and popup status refresh automatically every 10 seconds while the dashboard tab is visible. Returning to a previously hidden tab triggers an immediate refresh, and overlapping dashboard requests are suppressed.
 
 When a report is submitted, JellyPulse first requests the user's active Jellyfin sessions and captures the most recently active session's playback position. If nothing is playing, it attaches the last item JellyPulse observed for that user, including its last-known position and observation time. The dashboard, My Reports, and outgoing issue notifications label the fallback as **most recently watched** so it is not mistaken for live playback.
+
+The overview's **Currently watching** section uses live Jellyfin sessions rather than the five-minute reporting fallback. Each viewer card shows the user, title, device/client, elapsed time, total runtime, percentage watched, and a progress bar. The report page refreshes its own playback card every 10 seconds. Items without a known runtime, such as some live streams, show elapsed time with an unavailable total instead of an inaccurate percentage.
 
 ## Requirements
 
