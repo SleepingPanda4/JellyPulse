@@ -18,7 +18,9 @@ Current release: **v1.1.0** · See [CHANGELOG.md](CHANGELOG.md) for release hist
 - Server-side session cookies (`HttpOnly`, `SameSite=Strict`) and AES-256-GCM encrypted API keys, notification credentials, and Jellyfin session tokens in PostgreSQL.
 - Playback polling every 30 seconds; the user's latest session is retained for five minutes after it stops.
 - Reports containing the user, item details, device/client, playback timestamp, issue type/description, open/resolved state, submission time, and the preceding five minutes of Jellyfin container metrics.
-- Admin dashboard with active/recent viewers, CPU history, a recent issue queue, resolution control, and multiple notification destinations.
+- A private **My Reports** history where each user can track their open and resolved reports and read administrator resolution notes.
+- Admin resolution notes and durable Jellyfin popup delivery when the user next opens a compatible active client session.
+- Admin dashboard with active/recent viewers, CPU history, a recent issue queue, resolution and popup-delivery status, and multiple notification destinations.
 - One-time Jellyfin account invitations that expire after 30 minutes, 1 hour, 1 day, or 7 days.
 - Revocable pre-authenticated reporting links with optional expiration. Raw 256-bit link tokens are shown once and only SHA-256 hashes are stored; link sessions never receive administrator access.
 
@@ -39,6 +41,12 @@ An administrator can create a private link for any enabled Jellyfin user from th
 JellyPulse can notify multiple destinations for every submitted issue. Supported providers are Home Assistant, SMTP email, Discord, Slack, ntfy, Gotify, Telegram, Pushover, generic JSON webhooks, and an Apprise API bridge for additional services. Each destination can be edited in a popup, tested, disabled, or deleted independently. Existing secrets stay encrypted when an edit field is left blank; credentials are never returned to the browser after saving.
 
 For Home Assistant, create a long-lived access token from the Home Assistant user profile and enter the `notify` service suffix, such as `mobile_app_your_phone`. JellyPulse calls `/api/services/notify/{service}`. For email, use the SMTP values supplied by the mail provider. Apprise users can connect a separately deployed Apprise API instance and provide one or more Apprise notification URLs; Apprise API is not bundled in this Compose stack.
+
+### Report resolution and user messages
+
+Resolving a report opens an optional resolution-note dialog. JellyPulse saves the note in the report owner's **My Reports** history and creates a durable message queue entry. Every 30 seconds, the existing Jellyfin session poll looks for that user on a recently active client that advertises the `DisplayMessage` command. JellyPulse then sends the resolution through Jellyfin's session message API and records when Jellyfin accepted it.
+
+This is an in-app Jellyfin message, not a background mobile push notification. The Jellyfin app must be open and connected, and client support varies. Unsupported clients leave the message queued while **My Reports** remains the permanent and reliable record. JellyPulse sends at most one queued resolution per user during each poll so several completed reports do not overwrite one another on the same client. Reopening a report cancels any queued popup and clears its resolution note.
 
 ## Requirements
 
@@ -272,6 +280,7 @@ docker compose logs --tail=100 app db
 - **Jellyfin HTTP 401:** verify the actual Jellyfin username/password directly in Jellyfin, check account lockout/remote-access policy, and inspect the Jellyfin authentication log.
 - **Account invitation cannot create a user:** confirm the dedicated Jellyfin API key is still valid and that the username is not already in use. The invitation remains valid after a failed attempt and is deleted only after Jellyfin successfully creates the account.
 - **Notification test failed:** the destination row displays the most recent provider error. Confirm outbound DNS/network access from the JellyPulse container and verify the provider token, URL, service name, or SMTP settings.
+- **Resolved report popup remains queued:** open Jellyfin as the affected user on a client that supports the `DisplayMessage` session command. Some TV clients do not advertise or implement this command; the resolution is still available under My Reports.
 - **Browser security-header warnings over an IP address:** plain HTTP origins are not considered trustworthy for several browser features. Complete the Caddy/HTTPS setup before public use.
 
 To intentionally erase JellyPulse and rerun first setup, use `docker compose down -v`. This permanently deletes reports, metrics, sessions, links, destinations, and settings. It does not delete Jellyfin media, but it should never be used as a routine troubleshooting command.

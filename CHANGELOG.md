@@ -9,6 +9,8 @@ All notable JellyPulse changes are documented here.
 - One-time Jellyfin user invitations with 30-minute, 1-hour, 1-day, or 7-day expiration.
 - Secure self-service account creation that stores only a SHA-256 hash of each 256-bit invitation token and deletes the invitation after successful use.
 - An isolated development Compose stack with hot reload, a separate database volume, separate secrets, and an alternate-on-port-3000 workflow.
+- A private My Reports history with report status, resolution timestamps, and administrator notes.
+- Durable resolution-message queues that send Jellyfin popups to the user's next compatible active client and track delivery status.
 
 ### Changed
 

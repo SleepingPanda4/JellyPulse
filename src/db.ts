@@ -12,6 +12,10 @@ export async function migrate() {
     CREATE TABLE IF NOT EXISTS recent_playback (user_id text PRIMARY KEY, username text NOT NULL, payload jsonb NOT NULL, last_seen timestamptz NOT NULL);
     CREATE TABLE IF NOT EXISTS metric_samples (id bigserial PRIMARY KEY, captured_at timestamptz NOT NULL DEFAULT now(), cpu_percent numeric, memory_bytes bigint, memory_limit bigint, gpu_percent numeric);
     CREATE TABLE IF NOT EXISTS issues (id bigserial PRIMARY KEY, created_at timestamptz NOT NULL DEFAULT now(), status text NOT NULL DEFAULT 'open', issue_type text NOT NULL, description text NOT NULL, user_id text NOT NULL, username text NOT NULL, playback jsonb NOT NULL, metrics jsonb NOT NULL);
+    ALTER TABLE issues ADD COLUMN IF NOT EXISTS resolved_at timestamptz;
+    ALTER TABLE issues ADD COLUMN IF NOT EXISTS resolution_note text;
+    CREATE TABLE IF NOT EXISTS issue_resolution_notifications (id bigserial PRIMARY KEY, issue_id bigint UNIQUE NOT NULL REFERENCES issues(id) ON DELETE CASCADE, user_id text NOT NULL, created_at timestamptz NOT NULL DEFAULT now(), delivered_at timestamptz, delivery_session_id text, last_attempt_at timestamptz, last_error text);
+    CREATE INDEX IF NOT EXISTS issue_resolution_notifications_pending_idx ON issue_resolution_notifications(user_id, created_at) WHERE delivered_at IS NULL;
     CREATE TABLE IF NOT EXISTS access_links (id uuid PRIMARY KEY, user_id text NOT NULL, username text NOT NULL, label text NOT NULL, token_hash text UNIQUE NOT NULL, created_at timestamptz NOT NULL DEFAULT now(), expires_at timestamptz, revoked_at timestamptz, last_used_at timestamptz);
     CREATE INDEX IF NOT EXISTS access_links_token_hash_idx ON access_links(token_hash);
     CREATE TABLE IF NOT EXISTS notification_destinations (id uuid PRIMARY KEY, type text NOT NULL, label text NOT NULL, config text NOT NULL, enabled boolean NOT NULL DEFAULT true, created_at timestamptz NOT NULL DEFAULT now(), last_sent_at timestamptz, last_error text);
