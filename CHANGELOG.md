@@ -38,6 +38,7 @@ All notable JellyPulse changes are documented here.
 - Moved notification destinations from the dashboard to the Settings page.
 - Limited the dashboard queue to unresolved reports; resolved reports remain available in the complete Reports archive.
 - Replaced the live playback-pipeline line graph with horizontal bars comparing current and five-minute peak direct play, remux, and transcode activity.
+- Changed the report-details header to scroll naturally with the report instead of remaining fixed at the top of the popup.
 
 ## [1.1.0] - 2026-07-15
 
