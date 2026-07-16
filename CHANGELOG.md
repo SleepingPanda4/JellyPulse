@@ -38,7 +38,7 @@ All notable JellyPulse changes are documented here.
 - Moved notification destinations from the dashboard to the Settings page.
 - Limited the dashboard queue to unresolved reports; resolved reports remain available in the complete Reports archive.
 - Replaced the live playback-pipeline line graph with horizontal bars comparing current and five-minute peak direct play, remux, and transcode activity.
-- Changed the report-details header to scroll naturally with the report instead of remaining fixed at the top of the popup.
+- Standardized every popup header to remain pinned while its content scrolls.
 - Reworked My Reports into a compact, clickable list with full playback, issue, status, and resolution information available in a details popup.
 - Added a 15-minute per-user Jellyfin library cache, background cache warming, and combined cached show/season/episode loading for much faster manual item selection.
 - Added Jellyfin saved playback position and watched-percentage recovery for manually selected older movies and episodes.
