@@ -27,6 +27,7 @@ All notable JellyPulse changes are documented here.
 - A dashboard report queue sortable by show or movie, submission time, and resolved status, with full report details loaded on demand.
 - Automatic grouping of multiple unresolved reports for the same Jellyfin item, including newest-first submitters and expandable individual report rows.
 - A dedicated Reports page with sorting by title, season, item, submit time, user, or issue while always prioritizing unresolved reports.
+- Page-wide modal scrolling, sticky popup headers, desktop gutter dismissal, Escape-key dismissal, and mobile-friendly Close controls.
 
 ### Changed
 

@@ -28,6 +28,7 @@ Current release: **v1.1.0** · See [CHANGELOG.md](CHANGELOG.md) for release hist
 - A complete Reports archive sortable by show or movie, season, episode or item, submit time, user, and issue, with unresolved reports always above resolved reports.
 - A Users workspace with Jellyfin account status, most recently watched media, approximate observed watch time, most-watched title or series, watch history, user reports, reporting links, and one-time account invitations.
 - A report-detail popup with playback progress, the exact reported problem, five-minute CPU/RAM/GPU and direct-play/remux/transcode graphs, active transcode details, and resolution actions.
+- Page-wide popup scrolling with sticky titles and Close controls, desktop backdrop dismissal, and larger mobile close targets.
 - A Settings workspace for securely changing the Jellyfin connection and managing notification destinations.
 - Live playback progress under **Report a playback issue**, including elapsed time, total runtime, and percentage watched.
 - One-time Jellyfin account invitations that expire after 30 minutes, 1 hour, 1 day, or 7 days.
