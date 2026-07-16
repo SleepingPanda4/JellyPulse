@@ -28,7 +28,7 @@ All notable JellyPulse changes are documented here.
 - Automatic grouping of multiple unresolved reports for the same Jellyfin item, including newest-first submitters and expandable individual report rows.
 - A dedicated Reports page with sorting by title, season, item, submit time, user, or issue while always prioritizing unresolved reports.
 - Page-wide modal scrolling, sticky popup headers, desktop gutter dismissal, Escape-key dismissal, and mobile-friendly Close controls.
-- Synchronized dropdown and clickable-column sorting on All Reports, plus an Open Reports overview shortcut.
+- Clickable-column sorting on All Reports, plus an Open Reports overview shortcut.
 
 ### Changed
 
