@@ -6,4 +6,11 @@ export async function validateServer(host: string, key: string) { const r = awai
 type JellyfinIdentity = { id: string; username: string; token: string; serverAdmin: boolean };
 export async function jellyfinLoginAt(host: string, username: string, password: string): Promise<JellyfinIdentity> { const r = await fetch(host.replace(/\/$/, '') + '/Users/AuthenticateByName', { method: 'POST', headers: { 'Content-Type': 'application/json', 'X-Emby-Authorization': 'MediaBrowser Client="JellyPulse", Device="Web", DeviceId="jellypulse-web", Version="0.1.0"' }, body: JSON.stringify({ Username: username, Pw: password, Password: password }) }); if (!r.ok) { const detail = await r.json().then((x: any) => x.Message || x.message).catch(() => undefined); throw new Error(`Jellyfin sign-in was rejected (HTTP ${r.status})${detail ? `: ${detail}` : ''}`); } const body = await r.json() as any; return { id: body.User.Id as string, username: body.User.Name as string, token: body.AccessToken as string, serverAdmin: Boolean(body.User.Policy?.IsAdministrator) }; }
 export async function jellyfinLogin(username: string, password: string) { const c = await config(); return jellyfinLoginAt(c.host, username, password); }
-export async function createJellyfinUser(username: string, password: string) { const response = await api('/Users/New', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ Name: username, Password: password }) }); return response.json() as Promise<{ Id: string; Name: string }>;
+export async function createJellyfinUser(username: string, password: string) {
+  const response = await api('/Users/New', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ Name: username, Password: password })
+  });
+  return response.json() as Promise<{ Id: string; Name: string }>;
+}
