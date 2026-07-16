@@ -14,7 +14,7 @@ All notable JellyPulse changes are documented here.
 - Visibility-aware admin dashboard refresh every 10 seconds, with immediate refresh when returning to the tab.
 - Live playback-position capture at report submission with a clearly labeled most-recently-watched fallback when the user is no longer playing anything.
 - Active-session viewer cards under JellyPulse Overview and auto-refreshing playback progress bars on both the overview and report form.
-- Hamburger navigation with separate Dashboard, Report Issue, Users, and Settings pages.
+- Hamburger navigation with separate Dashboard, Reports, Users, Report Playback, and Settings pages.
 - User management summaries, persistent observed watch history, per-user filtering, most-recently-watched media, most-watched media, and report totals.
 - Secure Jellyfin host/API-key reconfiguration with administrator reauthentication and no API-key disclosure.
 - Category-specific quick-report options with an optional free-form description.
@@ -28,6 +28,7 @@ All notable JellyPulse changes are documented here.
 - Automatic grouping of multiple unresolved reports for the same Jellyfin item, including newest-first submitters and expandable individual report rows.
 - A dedicated Reports page with sorting by title, season, item, submit time, user, or issue while always prioritizing unresolved reports.
 - Page-wide modal scrolling, sticky popup headers, desktop gutter dismissal, Escape-key dismissal, and mobile-friendly Close controls.
+- Synchronized dropdown and clickable-column sorting on All Reports, plus an Open Reports overview shortcut.
 
 ### Changed
 
