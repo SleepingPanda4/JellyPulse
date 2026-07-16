@@ -24,7 +24,7 @@ Current release: **v1.1.0** · See [CHANGELOG.md](CHANGELOG.md) for release hist
 - Admin resolution notes and durable Jellyfin popup delivery when the user next opens a compatible active client session.
 - Hamburger navigation with focused Dashboard, Report Issue, Users, and Settings pages instead of placing every administrator control on the overview.
 - Self-refreshing admin overview with compact CPU, RAM, Intel/NVIDIA GPU, and playback-pipeline graphs for the last five minutes alongside active viewer cards and playback progress.
-- A live dashboard report queue sortable by show or movie, submission time, and resolved status, with on-demand access to the full diagnostic popup.
+- A live dashboard report queue sortable by show or movie, submission time, and resolved status. Multiple open reports for the same Jellyfin item are grouped with newest-first submitters and expandable individual details.
 - A Users workspace with Jellyfin account status, most recently watched media, approximate observed watch time, most-watched title or series, watch history, user reports, reporting links, and one-time account invitations.
 - A report-detail popup with playback progress, the exact reported problem, five-minute CPU/RAM/GPU and direct-play/remux/transcode graphs, active transcode details, and resolution actions.
 - A Settings workspace for securely changing the Jellyfin connection and managing notification destinations.

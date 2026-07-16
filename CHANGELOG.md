@@ -25,6 +25,7 @@ All notable JellyPulse changes are documented here.
 - A compact five-minute overview for CPU, RAM, optional Intel/NVIDIA GPU usage, and direct-play/remux/transcode activity.
 - Ten-second dashboard and metric refreshes with overlap protection for slower collectors.
 - A dashboard report queue sortable by show or movie, submission time, and resolved status, with full report details loaded on demand.
+- Automatic grouping of multiple unresolved reports for the same Jellyfin item, including newest-first submitters and expandable individual report rows.
 
 ### Changed
 
