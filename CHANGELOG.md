@@ -11,6 +11,7 @@ All notable JellyPulse changes are documented here.
 - An isolated development Compose stack with hot reload, a separate database volume, separate secrets, and an alternate-on-port-3000 workflow.
 - A private My Reports history with report status, resolution timestamps, and administrator notes.
 - Durable resolution-message queues that send Jellyfin popups to the user's next compatible active client and track delivery status.
+- Visibility-aware admin dashboard refresh every 10 seconds, with immediate refresh when returning to the tab.
 
 ### Changed
 

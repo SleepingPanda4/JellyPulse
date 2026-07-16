@@ -20,7 +20,7 @@ Current release: **v1.1.0** · See [CHANGELOG.md](CHANGELOG.md) for release hist
 - Reports containing the user, item details, device/client, playback timestamp, issue type/description, open/resolved state, submission time, and the preceding five minutes of Jellyfin container metrics.
 - A private **My Reports** history where each user can track their open and resolved reports and read administrator resolution notes.
 - Admin resolution notes and durable Jellyfin popup delivery when the user next opens a compatible active client session.
-- Admin dashboard with active/recent viewers, CPU history, a recent issue queue, resolution and popup-delivery status, and multiple notification destinations.
+- Self-refreshing admin dashboard with active/recent viewers, CPU history, a recent issue queue, resolution and popup-delivery status, and multiple notification destinations.
 - One-time Jellyfin account invitations that expire after 30 minutes, 1 hour, 1 day, or 7 days.
 - Revocable pre-authenticated reporting links with optional expiration. Raw 256-bit link tokens are shown once and only SHA-256 hashes are stored; link sessions never receive administrator access.
 
@@ -47,6 +47,8 @@ For Home Assistant, create a long-lived access token from the Home Assistant use
 Resolving a report opens an optional resolution-note dialog. JellyPulse saves the note in the report owner's **My Reports** history and creates a durable message queue entry. Every 30 seconds, the existing Jellyfin session poll looks for that user on a recently active client that advertises the `DisplayMessage` command. JellyPulse then sends the resolution through Jellyfin's session message API and records when Jellyfin accepted it.
 
 This is an in-app Jellyfin message, not a background mobile push notification. The Jellyfin app must be open and connected, and client support varies. Unsupported clients leave the message queued while **My Reports** remains the permanent and reliable record. JellyPulse sends at most one queued resolution per user during each poll so several completed reports do not overwrite one another on the same client. Reopening a report cancels any queued popup and clears its resolution note.
+
+The administrator overview, viewer list, metrics, issue queue, and popup status refresh automatically every 10 seconds while the dashboard tab is visible. Returning to a previously hidden tab triggers an immediate refresh, and overlapping dashboard requests are suppressed.
 
 ## Requirements
 
