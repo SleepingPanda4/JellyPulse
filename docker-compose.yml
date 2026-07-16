@@ -12,7 +12,7 @@ services:
       PGDATABASE: reporter
       # Generate once: openssl rand -base64 32. Never change after setup.
       APP_ENCRYPTION_KEY: ${APP_ENCRYPTION_KEY}
-      SESSION_COOKIE_SECURE: "false" # change to true behind HTTPS
+      SESSION_COOKIE_SECURE: ${SESSION_COOKIE_SECURE:-false}
       DOCKER_HOST: tcp://docker-proxy:2375
       JELLYFIN_CONTAINER_NAME: ${JELLYFIN_CONTAINER_NAME:-jellyfin}
     depends_on:

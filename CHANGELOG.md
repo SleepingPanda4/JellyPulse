@@ -2,6 +2,13 @@
 
 All notable JellyPulse changes are documented here.
 
+## [Unreleased]
+
+### Changed
+
+- Expanded installation, remote Jellyfin, Caddy, upgrade, backup, security, and troubleshooting documentation.
+- Made `SESSION_COOKIE_SECURE` configurable through `.env` as documented.
+
 ## [1.1.0] - 2026-07-15
 
 ### Added
