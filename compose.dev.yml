@@ -1,0 +1,72 @@
+name: jellypulse-dev
+
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile.dev
+    restart: unless-stopped
+    ports: ["${DEV_APP_BIND_ADDRESS:-127.0.0.1}:${DEV_APP_PORT:-3001}:3000"]
+    environment:
+      PGHOST: db
+      PGPORT: 5432
+      PGUSER: reporter_dev
+      PGPASSWORD: ${DEV_POSTGRES_PASSWORD}
+      PGDATABASE: reporter_dev
+      APP_ENCRYPTION_KEY: ${DEV_APP_ENCRYPTION_KEY}
+      SESSION_COOKIE_SECURE: ${DEV_SESSION_COOKIE_SECURE:-false}
+      DOCKER_HOST: tcp://docker-proxy:2375
+      JELLYFIN_CONTAINER_NAME: ${JELLYFIN_CONTAINER_NAME:-jellyfin}
+      NODE_ENV: development
+    volumes:
+      - .:/app
+      - dev-node-modules:/app/node_modules
+    depends_on:
+      db:
+        condition: service_healthy
+      docker-proxy:
+        condition: service_started
+
+  db:
+    image: postgres:17-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: reporter_dev
+      POSTGRES_USER: reporter_dev
+      POSTGRES_PASSWORD: ${DEV_POSTGRES_PASSWORD}
+    volumes: [postgres-dev-data:/var/lib/postgresql/data]
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U reporter_dev -d reporter_dev"]
+      interval: 5s
+      timeout: 5s
+      retries: 12
+
+  docker-proxy:
+    image: tecnativa/docker-socket-proxy:latest
+    restart: unless-stopped
+    environment:
+      CONTAINERS: 1
+      POST: 0
+      AUTH: 0
+      BUILD: 0
+      COMMIT: 0
+      CONFIGS: 0
+      DISTRIBUTION: 0
+      EVENTS: 0
+      EXEC: 0
+      IMAGES: 0
+      INFO: 0
+      NETWORKS: 0
+      NODES: 0
+      PLUGINS: 0
+      SECRETS: 0
+      SERVICES: 0
+      SWARM: 0
+      SYSTEM: 0
+      TASKS: 0
+      VOLUMES: 0
+    volumes: [/var/run/docker.sock:/var/run/docker.sock:ro]
+
+volumes:
+  postgres-dev-data:
+  dev-node-modules:

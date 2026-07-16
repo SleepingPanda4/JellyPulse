@@ -186,6 +186,48 @@ git checkout v1.1.0
 docker compose up -d --build
 ```
 
+## Isolated development stack
+
+Development should run from the `develop` branch in a separate checkout. The included `compose.dev.yml` uses the fixed Compose project name `jellypulse-dev`, port `3001`, a separate PostgreSQL database/volume, a separate encryption key, and its own containers. It does not read or migrate the production JellyPulse database. The application source is mounted into the container and `tsx watch` restarts it when files change.
+
+Clone and start it alongside production:
+
+```sh
+git clone --branch develop https://github.com/SleepingPanda4/JellyPulse.git /opt/jellypulse-dev
+cd /opt/jellypulse-dev
+cp .env.dev.example .env.dev
+nano .env.dev
+docker compose --env-file .env.dev -f compose.dev.yml up -d --build
+docker compose --env-file .env.dev -f compose.dev.yml ps
+```
+
+Generate a new development encryption key with `openssl rand -base64 32`. Do not copy the production database password or encryption key. With the default localhost binding, access the development site through a separate SSH tunnel:
+
+```sh
+ssh -L 3001:127.0.0.1:3001 root@YOUR-LXC-IP
+```
+
+Then open `http://localhost:3001`. Development has its own first-run setup and administrator session. To follow logs or stop only development:
+
+```sh
+cd /opt/jellypulse-dev
+docker compose --env-file .env.dev -f compose.dev.yml logs -f app
+docker compose --env-file .env.dev -f compose.dev.yml down
+```
+
+The normal `down` command preserves the development database. Add `-v` only when you intentionally want to erase the development environment and repeat first-run setup.
+
+The isolated stack protects production JellyPulse users, reports, notifications, sessions, and settings. However, connecting development to the same Jellyfin server still allows tested features to affect that Jellyfin server. In particular, invitation redemption creates a real Jellyfin user. Use a separate test Jellyfin server for complete isolation, or delete test accounts and avoid sending live notifications after testing.
+
+For ongoing work, commit and push `develop` only:
+
+```sh
+git switch develop
+git push -u origin develop
+```
+
+Production remains on `main` under `/opt/jellypulse`. Merge a tested release into `main` only when you are ready to deploy it.
+
 ## Backup
 
 Back up both the database and `.env`; neither is useful alone because `APP_ENCRYPTION_KEY` decrypts the secrets stored in PostgreSQL.
