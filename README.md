@@ -19,7 +19,16 @@ Current release: **v1.1.0** · See [CHANGELOG.md](CHANGELOG.md) for release hist
 - Playback polling every 30 seconds; the user's latest session is retained for five minutes after it stops.
 - Reports containing the user, item details, device/client, playback timestamp, issue type/description, open/resolved state, submission time, and the preceding five minutes of Jellyfin container metrics.
 - Admin dashboard with active/recent viewers, CPU history, a recent issue queue, resolution control, and multiple notification destinations.
+- One-time Jellyfin account invitations that expire after 30 minutes, 1 hour, 1 day, or 7 days.
 - Revocable pre-authenticated reporting links with optional expiration. Raw 256-bit link tokens are shown once and only SHA-256 hashes are stored; link sessions never receive administrator access.
+
+### Jellyfin user invitations
+
+An administrator can create a one-time account invitation from the JellyPulse dashboard. The recipient opens the private link and chooses a Jellyfin username and password; JellyPulse then creates a standard, non-administrator user directly in Jellyfin. After Jellyfin confirms creation, the invitation is permanently deleted and cannot be reused.
+
+Invitations can last only 30 minutes, 1 hour, 1 day, or 7 days. There is deliberately no permanent option. Each link contains a random 256-bit token in its URL fragment, while JellyPulse stores only its SHA-256 hash. The raw invitation is shown only when it is created, so copy it before leaving or refreshing the page. An administrator can revoke any unused invitation from the dashboard.
+
+Jellyfin controls the new account's library access and other user policy. Review the account under Jellyfin Dashboard → Users after creation if it needs restricted libraries, playback limits, or other permissions. The recipient can immediately use **Login with Jellyfin** in JellyPulse after creating the account.
 
 ### Private reporting links
 
@@ -153,6 +162,7 @@ The compose stack uses a narrowly-permissioned Docker socket proxy instead of gi
 - Restrict access with a VPN or reverse-proxy access policy if this is only for a small private server.
 - Do not publish the PostgreSQL or Docker-proxy ports; this compose file does not publish either.
 - Treat pre-authenticated links as passwords. Use expirations, share them privately, and revoke exposed links.
+- Treat account invitation links as passwords too. Send them privately, choose the shortest practical lifetime, and revoke unused links when plans change.
 
 ## Upgrade
 
@@ -202,6 +212,7 @@ docker compose logs --tail=100 app db
 - **PostgreSQL `ECONNREFUSED`:** wait for the database health check and run `docker compose up -d` again. Inspect `docker compose logs db` if it never becomes healthy.
 - **PostgreSQL password authentication failed:** the existing volume was initialized with a different password than the current `.env`. Update the PostgreSQL role password or restore the matching `.env`; do not delete the volume if it contains reports you need.
 - **Jellyfin HTTP 401:** verify the actual Jellyfin username/password directly in Jellyfin, check account lockout/remote-access policy, and inspect the Jellyfin authentication log.
+- **Account invitation cannot create a user:** confirm the dedicated Jellyfin API key is still valid and that the username is not already in use. The invitation remains valid after a failed attempt and is deleted only after Jellyfin successfully creates the account.
 - **Notification test failed:** the destination row displays the most recent provider error. Confirm outbound DNS/network access from the JellyPulse container and verify the provider token, URL, service name, or SMTP settings.
 - **Browser security-header warnings over an IP address:** plain HTTP origins are not considered trustworthy for several browser features. Complete the Caddy/HTTPS setup before public use.
 

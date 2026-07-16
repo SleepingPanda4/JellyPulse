@@ -4,6 +4,11 @@ All notable JellyPulse changes are documented here.
 
 ## [Unreleased]
 
+### Added
+
+- One-time Jellyfin user invitations with 30-minute, 1-hour, 1-day, or 7-day expiration.
+- Secure self-service account creation that stores only a SHA-256 hash of each 256-bit invitation token and deletes the invitation after successful use.
+
 ### Changed
 
 - Expanded installation, remote Jellyfin, Caddy, upgrade, backup, security, and troubleshooting documentation.
