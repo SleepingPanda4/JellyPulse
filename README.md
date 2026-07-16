@@ -18,6 +18,7 @@ Current release: **v1.1.0** · See [CHANGELOG.md](CHANGELOG.md) for release hist
 - Server-side session cookies (`HttpOnly`, `SameSite=Strict`) and AES-256-GCM encrypted API keys, notification credentials, and Jellyfin session tokens in PostgreSQL.
 - Playback polling every 30 seconds; the user's latest observed item and position are retained as a reporting fallback after playback stops.
 - Streamlined reporting with category-specific choices such as **Playback stopped**, **Glitching or artifacts**, **Wrong language**, and **Wrong timing**; a written description is optional.
+- A **Not this item** library picker that searches accessible Jellyfin movies and shows, then provides stacked season and episode selectors for a series.
 - Reports containing the user, item details, device/client, live playback time or last-known position, playback percentage, current/recent source, issue category/preset/optional notes, open/resolved state, submission time, and the preceding five minutes of Jellyfin container metrics.
 - A private **My Reports** history where each user can track their open and resolved reports and read administrator resolution notes.
 - Admin resolution notes and durable Jellyfin popup delivery when the user next opens a compatible active client session.
@@ -59,6 +60,8 @@ This is an in-app Jellyfin message, not a background mobile push notification. T
 The administrator overview and visible user-report queue refresh automatically every 10 seconds. Returning to a previously hidden browser tab triggers an immediate refresh, and overlapping requests are suppressed.
 
 When a report is submitted, JellyPulse first requests the user's active Jellyfin sessions and captures the most recently active session's playback position. If nothing is playing, it attaches the last item JellyPulse observed for that user, including its last-known position and observation time. The dashboard, My Reports, and outgoing issue notifications label the fallback as **most recently watched** so it is not mistaken for live playback.
+
+If the detected item is wrong, the user can choose **Not this item**. JellyPulse searches Jellyfin using that user's library access, shows movie and series matches, and expands a selected series into season and episode selectors. Only the selected Jellyfin item ID is submitted by the browser; JellyPulse fetches and validates the movie or episode again server-side before saving the report. A manually selected item is labeled as such and does not claim a playback position or percentage that JellyPulse did not observe.
 
 The overview's **Currently watching** section uses live Jellyfin sessions rather than the five-minute reporting fallback. Each viewer card shows the user, title, device/client, elapsed time, total runtime, percentage watched, and a progress bar. The report page refreshes its own playback card every 10 seconds. Items without a known runtime, such as some live streams, show elapsed time with an unavailable total instead of an inaccurate percentage.
 

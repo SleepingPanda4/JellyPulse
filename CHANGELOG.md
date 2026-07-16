@@ -19,6 +19,7 @@ All notable JellyPulse changes are documented here.
 - Secure Jellyfin host/API-key reconfiguration with administrator reauthentication and no API-key disclosure.
 - Category-specific quick-report options with an optional free-form description.
 - An administrator report-detail popup showing playback percentage, report contents, playback metadata, captured CPU/GPU load, and resolution actions.
+- A user-scoped Jellyfin library search with a **Not this item** override and stacked show, season, and episode selection.
 
 ### Changed
 
