@@ -37,6 +37,7 @@ All notable JellyPulse changes are documented here.
 - Moved user reports, account invitations, and pre-authenticated reporting links from the dashboard to the Users page.
 - Moved notification destinations from the dashboard to the Settings page.
 - Limited the dashboard queue to unresolved reports; resolved reports remain available in the complete Reports archive.
+- Replaced the live playback-pipeline line graph with horizontal bars comparing current and five-minute peak direct play, remux, and transcode activity.
 
 ## [1.1.0] - 2026-07-15
 
