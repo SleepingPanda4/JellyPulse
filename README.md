@@ -17,6 +17,11 @@ The all-in-one operations dashboard for Jellyfin. Monitor server health, track a
 - Playback polling every 30 seconds; the user's latest session is retained for five minutes after it stops.
 - Reports containing the user, item details, device/client, playback timestamp, issue type/description, open/resolved state, submission time, and the preceding five minutes of Jellyfin container metrics.
 - Admin dashboard with active/recent viewers, CPU history, a sortable-ready issue queue, resolution control, and Discord-compatible webhook notifications.
+- Revocable pre-authenticated reporting links with optional expiration. Raw 256-bit link tokens are shown once and only SHA-256 hashes are stored; link sessions never receive administrator access.
+
+### Private reporting links
+
+An administrator can create a private link for any enabled Jellyfin user from the dashboard. The user can bookmark that link and open it instead of entering a password. Tokens are placed in the URL fragment so they are not sent in HTTP request paths or referrer headers. Treat each link like a password: send it privately, give shared-device links an expiration date, and revoke a link immediately if it is exposed. Disabling the Jellyfin user also prevents the link from being used.
 
 ## Start it
 
