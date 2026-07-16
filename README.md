@@ -8,7 +8,7 @@
 
 The all-in-one operations dashboard for Jellyfin. Monitor server health, track active viewers, collect playback issues, and keep your media library running smoothly — all from one lightweight, self-hosted application.
 
-Current release: **v1.1.0** · See [CHANGELOG.md](CHANGELOG.md) for release history.
+Current release: **v1.2.0** · See [CHANGELOG.md](CHANGELOG.md) for release history.
 
 ## Features
 
@@ -227,7 +227,7 @@ To pin a released version:
 
 ```sh
 git fetch --tags
-git checkout v1.1.0
+git checkout v1.2.0
 docker compose up -d --build
 ```
 

@@ -4,6 +4,8 @@ All notable JellyPulse changes are documented here.
 
 ## [Unreleased]
 
+## [1.2.0] - 2026-07-16
+
 ### Added
 
 - One-time Jellyfin user invitations with 30-minute, 1-hour, 1-day, or 7-day expiration.
