@@ -3,7 +3,7 @@
   "version": "1.2.0",
   "private": true,
   "type": "module",
-  "scripts": { "dev": "tsx watch src/server.ts", "start": "tsx src/server.ts", "telemetry-agent": "tsx src/telemetry-agent.ts", "check": "tsc --noEmit" },
+  "scripts": { "dev": "tsx watch src/server.ts", "start": "tsx src/server.ts", "telemetry-agent": "tsx src/telemetry-agent.ts", "check": "tsc --noEmit && node scripts/check-copy.mjs" },
   "dependencies": {
     "cookie-parser": "^1.4.7",
     "dockerode": "^4.0.2", "dotenv": "^16.4.7", "express": "^4.21.2", "helmet": "^8.0.0",

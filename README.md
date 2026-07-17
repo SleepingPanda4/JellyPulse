@@ -1,12 +1,12 @@
 # JellyPulse
 
 <p align="center">
-  <img src="assets/jellypulse-overview.png" alt="JellyPulse — Monitor, Report, Improve" width="900">
+  <img src="public/jellypulse-logo.png" alt="JellyPulse logo" width="180">
 </p>
 
-**MONITOR · REPORT · IMPROVE**
+## Report and Monitor
 
-The all-in-one operations dashboard for Jellyfin. Monitor server health, track active viewers, collect playback issues, and keep your media library running smoothly — all from one lightweight, self-hosted application.
+JellyPulse gives you one place to report playback problems and see what is happening on your Jellyfin server. It is lightweight, self-hosted, and meant to be pretty easy to live with.
 
 Current release: **v1.2.0** · See [CHANGELOG.md](CHANGELOG.md) for release history.
 

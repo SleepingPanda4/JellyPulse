@@ -14,6 +14,7 @@ All notable JellyPulse changes are documented here.
 
 ### Changed
 
+- Product wording now uses **Report and Monitor**, with the previous three-word tagline removed from the app and GitHub page.
 - The image-based Portainer stack is now the default `docker-compose.yml`; the repository-building stack is preserved as `compose.source.yml`.
 - JellyPulse can read its database password and application encryption key from mounted secret files while retaining environment-variable compatibility.
 - Telemetry errors now remain visible to administrators instead of being represented only as unavailable graph values.
@@ -81,7 +82,7 @@ All notable JellyPulse changes are documented here.
 
 - Added PostgreSQL startup health checks.
 - Database passwords containing URL-reserved characters now work correctly.
-- Improved Jellyfin authentication request compatibility and error reporting.
+- Better Jellyfin authentication request compatibility and error reporting.
 - Added secure localhost, LAN, SSH-tunnel, and reverse-proxy deployment guidance.
 
 ## [1.0.0] - 2026-07-15
