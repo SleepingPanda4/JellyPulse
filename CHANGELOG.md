@@ -4,6 +4,25 @@ All notable JellyPulse changes are documented here.
 
 ## [Unreleased]
 
+## [1.3.0] - 2026-07-17
+
+### Added
+
+- The JellyPulse logo is now used as the browser favicon and mobile home-screen icon.
+- A Portainer Web Editor stack that deploys the complete application without terminal commands and automatically generates persistent database and encryption secrets.
+- Automated multi-architecture GHCR images for Portainer deployments on AMD64 and ARM64 hosts.
+- Guided telemetry settings with independent CPU/RAM, GPU, and Jellyfin playback-pipeline health diagnostics.
+- Automatic Jellyfin container detection for same-host Docker installations.
+- An authenticated JellyPulse telemetry agent and restricted socket-proxy Compose stack for remote Jellyfin, with a clearly labeled whole-host CPU/RAM fallback for native LXC/VM installations.
+
+### Changed
+
+- Product wording now uses **Report and Monitor**, with the previous three-word tagline removed from the app and GitHub page.
+- The image-based Portainer stack is now the default `docker-compose.yml`; the repository-building stack is preserved as `compose.source.yml`.
+- JellyPulse can read its database password and application encryption key from mounted secret files while retaining environment-variable compatibility.
+- Telemetry errors now remain visible to administrators instead of being represented only as unavailable graph values.
+- A Jellyfin server with no active viewers now reports a healthy zero-stream playback pipeline.
+
 ## [1.2.0] - 2026-07-16
 
 ### Added
@@ -66,7 +85,7 @@ All notable JellyPulse changes are documented here.
 
 - Added PostgreSQL startup health checks.
 - Database passwords containing URL-reserved characters now work correctly.
-- Improved Jellyfin authentication request compatibility and error reporting.
+- Better Jellyfin authentication request compatibility and error reporting.
 - Added secure localhost, LAN, SSH-tunnel, and reverse-proxy deployment guidance.
 
 ## [1.0.0] - 2026-07-15

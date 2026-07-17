@@ -1,20 +1,18 @@
-name: jellypulse-dev
-
 services:
   app:
-    build:
-      context: .
-      dockerfile: Dockerfile.dev
+    build: .
     restart: unless-stopped
-    ports: ["${DEV_APP_BIND_ADDRESS:-0.0.0.0}:${DEV_APP_PORT:-3000}:3000"]
+    # Localhost only by default. Put it behind HTTPS/VPN before changing this.
+    ports: ["${APP_BIND_ADDRESS:-127.0.0.1}:3000:3000"]
     environment:
       PGHOST: db
       PGPORT: 5432
-      PGUSER: reporter_dev
-      PGPASSWORD: ${DEV_POSTGRES_PASSWORD}
-      PGDATABASE: reporter_dev
-      APP_ENCRYPTION_KEY: ${DEV_APP_ENCRYPTION_KEY}
-      SESSION_COOKIE_SECURE: ${DEV_SESSION_COOKIE_SECURE:-true}
+      PGUSER: reporter
+      PGPASSWORD: ${POSTGRES_PASSWORD}
+      PGDATABASE: reporter
+      # Generate once: openssl rand -base64 32. Never change after setup.
+      APP_ENCRYPTION_KEY: ${APP_ENCRYPTION_KEY}
+      SESSION_COOKIE_SECURE: ${SESSION_COOKIE_SECURE:-false}
       DOCKER_HOST: tcp://docker-proxy:2375
       JELLYFIN_CONTAINER_NAME: ${JELLYFIN_CONTAINER_NAME:-jellyfin}
       TELEMETRY_MODE: ${TELEMETRY_MODE:-auto}
@@ -24,10 +22,6 @@ services:
       GPU_METRIC_NAME: ${GPU_METRIC_NAME:-}
       GPU_METRIC_SCALE: ${GPU_METRIC_SCALE:-1}
       GPU_METRICS_VENDOR: ${GPU_METRICS_VENDOR:-}
-      NODE_ENV: development
-    volumes:
-      - .:/app
-      - dev-node-modules:/app/node_modules
     depends_on:
       db:
         condition: service_healthy
@@ -38,16 +32,17 @@ services:
     image: postgres:17-alpine
     restart: unless-stopped
     environment:
-      POSTGRES_DB: reporter_dev
-      POSTGRES_USER: reporter_dev
-      POSTGRES_PASSWORD: ${DEV_POSTGRES_PASSWORD}
-    volumes: [postgres-dev-data:/var/lib/postgresql/data]
+      POSTGRES_DB: reporter
+      POSTGRES_USER: reporter
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    volumes: [postgres-data:/var/lib/postgresql/data]
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U reporter_dev -d reporter_dev"]
+      test: ["CMD-SHELL", "pg_isready -U reporter -d reporter"]
       interval: 5s
       timeout: 5s
       retries: 12
 
+  # The app gets read-only Docker metadata/stats, never direct Docker-socket access.
   docker-proxy:
     image: tecnativa/docker-socket-proxy:latest
     restart: unless-stopped
@@ -75,5 +70,4 @@ services:
     volumes: [/var/run/docker.sock:/var/run/docker.sock:ro]
 
 volumes:
-  postgres-dev-data:
-  dev-node-modules:
+  postgres-data:

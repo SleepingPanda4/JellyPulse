@@ -1,14 +1,14 @@
 # JellyPulse
 
 <p align="center">
-  <img src="assets/jellypulse-overview.png" alt="JellyPulse - Monitor, Report, Improve" width="900">
+  <img src="public/jellypulse-logo.png" alt="JellyPulse logo" width="180">
 </p>
 
-**MONITOR · REPORT · IMPROVE**
+## Report and Monitor
 
-The all-in-one operations dashboard for Jellyfin. Monitor server health, track active viewers, collect playback issues, and keep your media library running smoothly - all from one lightweight, self-hosted application.
+JellyPulse gives you one place to report playback problems and see what is happening on your Jellyfin server. It is lightweight, self-hosted, and meant to be pretty easy to live with.
 
-Current release: **v1.2.0** · See [CHANGELOG.md](CHANGELOG.md) for release history.
+Current release: **v1.3.0** · See [CHANGELOG.md](CHANGELOG.md) for release history.
 
 ## Features
 
@@ -31,7 +31,8 @@ Current release: **v1.2.0** · See [CHANGELOG.md](CHANGELOG.md) for release hist
 - A Users workspace with Jellyfin account status, most recently watched media, approximate observed watch time, most-watched title or series, watch history, user reports, reporting links, and one-time account invitations.
 - A report-detail popup with playback progress, the exact reported problem, five-minute CPU/RAM/GPU and direct-play/remux/transcode graphs, active transcode details, and resolution actions.
 - Page-wide popup scrolling with sticky titles and Close controls, desktop backdrop dismissal, and larger mobile close targets.
-- A Settings workspace for securely changing the Jellyfin connection and managing notification destinations.
+- A Settings workspace for securely changing the Jellyfin connection, running per-source telemetry diagnostics, and managing notification destinations.
+- Automatic same-host Jellyfin container detection plus an authenticated aggregate telemetry agent for Jellyfin running on another Docker host.
 - Live playback progress under **Report a playback issue**, including elapsed time, total runtime, and percentage watched.
 - One-time Jellyfin account invitations that expire after 30 minutes, 1 hour, 1 day, or 7 days.
 - Revocable pre-authenticated reporting links with optional expiration. Raw 256-bit link tokens are shown once and only SHA-256 hashes are stored; link sessions never receive administrator access.
@@ -80,9 +81,32 @@ JellyPulse begins building its own watch history after this feature is installed
 - A Jellyfin server reachable from the JellyPulse container.
 - A dedicated Jellyfin API key and an existing Jellyfin user to designate as the JellyPulse administrator.
 - Git if installing or updating from GitHub.
-- Optional: Jellyfin on the same Docker host if you want container CPU/RAM collection.
+- Jellyfin may run on the same Docker host or another reachable Docker host. Remote CPU/RAM collection uses the included telemetry agent.
 
 ## Install
+
+### Portainer installation (no terminal commands)
+
+The default `docker-compose.yml` is ready for Docker Standalone environments managed by Portainer. The stack contains JellyPulse, PostgreSQL, the restricted Docker socket proxy, automatic health ordering, and a one-time secret initializer. It generates the PostgreSQL password and 32-byte application encryption key automatically, then retains both in a private named volume. No repository clone, `.env` file, or command-line secret generation is required on the client host.
+
+1. In Portainer, open **Stacks -> Add stack -> Web editor** and name the stack `jellypulse`.
+2. Copy the complete contents of `docker-compose.yml` into the editor.
+3. During development, add the environment variable `JELLYPULSE_IMAGE=ghcr.io/sleepingpanda4/jellypulse:develop`. Released stacks use the default `ghcr.io/sleepingpanda4/jellypulse:latest` image.
+4. Keep `APP_BIND_ADDRESS=127.0.0.1` when Caddy runs on the same Docker host. Set it to `0.0.0.0` in Portainer only when a trusted remote reverse proxy must connect, then restrict port 3000 with the host firewall.
+5. Set `SESSION_COOKIE_SECURE=true` when the public address uses HTTPS. Leave it false only for temporary direct HTTP access.
+6. Select **Deploy the stack**, then open JellyPulse and complete its browser-based first-run setup.
+
+After deployment, `secrets-init` showing **exited (0)** is expected: it is a one-time initialization job, while `app`, `db`, and `docker-proxy` remain running.
+
+The first container-image publication is private by default. Before clients deploy this stack, the project owner must open **GitHub profile -> Packages -> jellypulse -> Package settings -> Change visibility -> Public**. This is a one-time maintainer step; public GHCR images can then be pulled by Portainer without registry credentials.
+
+The `jellypulse_postgres-data` and `jellypulse_jellypulse-secrets` volumes must be backed up together. Deleting only the secrets volume makes the existing encrypted settings and PostgreSQL password unusable. Removing the stack without removing its volumes preserves both.
+
+This one-stack installation collects Docker CPU/RAM only when Jellyfin runs on the same Docker endpoint. A Jellyfin server on another host still needs the separate authenticated telemetry agent deployed on that host's Portainer endpoint; an ordinary Compose stack cannot place services across two independent Docker hosts.
+
+### Source-building command-line installation
+
+The source-building stack is retained as `compose.source.yml`. Always include `-f compose.source.yml` with production source-install commands; running plain `docker compose` now selects the image-based Portainer stack.
 
 1. Clone the repository and enter it:
 
@@ -107,10 +131,10 @@ JellyPulse begins building its own watch history after this feature is installed
 3. From this directory, run:
 
    ```sh
-   docker compose up -d --build
+   docker compose -f compose.source.yml up -d --build
    ```
 
-   Docker waits for PostgreSQL to pass its health check before starting JellyPulse. To see startup state, run `docker compose ps`.
+   Docker waits for PostgreSQL to pass its health check before starting JellyPulse. To see startup state, run `docker compose -f compose.source.yml ps`.
 
 4. On the host machine, open `http://localhost:3000` and complete setup. Use the SSH-tunnel or temporary LAN instructions below when Docker is running on a remote LXC/server.
 
@@ -147,7 +171,7 @@ APP_BIND_ADDRESS=0.0.0.0
 Apply it with:
 
 ```sh
-docker compose up -d --force-recreate
+docker compose -f compose.source.yml up -d --force-recreate
 ```
 
 The dashboard will then be available at `http://YOUR-LXC-IP:3000`. Do **not** leave this enabled when the LXC is publicly reachable. When Caddy is configured, change the value back to `127.0.0.1`, proxy Caddy to `127.0.0.1:3000`, and set `SESSION_COOKIE_SECURE=true`.
@@ -170,7 +194,7 @@ SESSION_COOKIE_SECURE=true
 ```
 
 ```sh
-docker compose up -d --force-recreate app
+docker compose -f compose.source.yml up -d --force-recreate app
 ```
 
 If Caddy runs on a different host or in an unrelated Docker network, it cannot reach the LXC's loopback address. Bind JellyPulse to the LAN address with `APP_BIND_ADDRESS=0.0.0.0`, proxy Caddy to `YOUR-LXC-IP:3000`, and use a firewall to allow port 3000 only from the reverse proxy.
@@ -179,7 +203,27 @@ If Caddy runs on a different host or in an unrelated Docker network, it cannot r
 
 JellyPulse authentication, session detection, reporting, and notifications work with a Jellyfin server on another machine as long as it is reachable from the JellyPulse container. Browser CORS settings do not apply because JellyPulse contacts Jellyfin server-to-server.
 
-The included Docker metrics collector is different: it reads the local Docker Engine and therefore only finds a Jellyfin container running on the same Docker host. With remote Jellyfin, reporting still works but the CPU/RAM graph remains empty until a remote metrics agent/exporter is added.
+Playback-pipeline telemetry also works remotely because it comes from the Jellyfin API. CPU and RAM come from Docker, so install the included telemetry agent on the Docker host that actually runs Jellyfin:
+
+```sh
+git clone https://github.com/SleepingPanda4/JellyPulse.git /opt/jellypulse-telemetry
+cd /opt/jellypulse-telemetry
+cp .env.telemetry.example .env.telemetry
+openssl rand -hex 32
+nano .env.telemetry
+```
+
+Paste the generated value into `TELEMETRY_AGENT_TOKEN`. Set `JELLYFIN_CONTAINER_NAME` if the container is not named `jellyfin`, and set `TELEMETRY_AGENT_BIND_ADDRESS` to the Jellyfin host's private LAN/VPN address. Do not bind the agent to a public interface. If Jellyfin is installed directly in an LXC/VM instead of Docker, leave `TELEMETRY_HOST_FALLBACK=true`; the status card will clearly label CPU/RAM as whole-host usage. Then start it:
+
+```sh
+docker compose --env-file .env.telemetry -f compose.telemetry-agent.yml up -d --build
+docker compose --env-file .env.telemetry -f compose.telemetry-agent.yml ps
+curl http://JELLYFIN-HOST-IP:9469/health
+```
+
+In JellyPulse, open **Settings -> Telemetry**, choose **Different host (remote agent)**, enter `http://JELLYFIN-HOST-IP:9469`, paste the same token, and select **Save and test telemetry**. The token is encrypted with AES-256-GCM before it is stored and is never returned to the browser. Restrict TCP port 9469 with the host firewall so only the JellyPulse host can reach it. The agent exposes only its health result and aggregated CPU/RAM/GPU values; its internal Docker socket proxy does not publish a port.
+
+To update the remote agent later, pull the same JellyPulse revision and rebuild that Compose file. The agent has no database or persistent volume.
 
 ## Jellyfin API key
 
@@ -187,9 +231,13 @@ In Jellyfin, create a dedicated API key for this service rather than reusing one
 
 ## Metrics and GPU support
 
-The compose stack uses a narrowly permissioned Docker socket proxy instead of giving the application the Docker socket. It reads Jellyfin container CPU and memory every 10 seconds. During the same sample JellyPulse reads active Jellyfin sessions and records direct-play, remux, and transcode counts plus codec, container, resolution, bitrate, framerate, hardware-acceleration type, completion, and transcode reasons. The overview shows the latest five-minute window and refreshes every 10 seconds. These samples are also embedded into each report so its diagnostic graphs do not change later.
+Open **Settings -> Telemetry** first. Its three independent status cards show whether CPU/RAM, GPU, and the Jellyfin playback pipeline are available, which source each uses, and the last error. **Run diagnostics** performs a fresh sample immediately.
 
-Docker Engine does not expose GPU utilization through container stats. JellyPulse therefore accepts an optional Prometheus-format Intel or NVIDIA GPU exporter without granting Docker exec or host-device access to the application. Set these values in `.env` and recreate the application container:
+In **Same Docker host (automatic)** mode, the Compose stack uses a narrowly permissioned Docker socket proxy instead of giving the application the Docker socket. JellyPulse first tries the configured container name and can automatically select a single container whose name, image, or labels identify Jellyfin. If several matches exist, enter the exact container name in Settings. In **Different host (remote agent)** mode, the agent uses the same restricted proxy beside Jellyfin and returns only aggregate measurements through a token-protected endpoint. If no Jellyfin container exists, it falls back to whole-host CPU/RAM from a read-only `/proc` mount.
+
+JellyPulse reads Jellyfin container CPU and memory every 10 seconds. During the same sample it reads active Jellyfin sessions and records direct-play, remux, and transcode counts plus codec, container, resolution, bitrate, framerate, hardware-acceleration type, completion, and transcode reasons. An idle server correctly reports zero streams; **Unavailable** means the Jellyfin API request itself failed. The overview shows the latest five-minute window and refreshes every 10 seconds. These samples are also embedded into each report so its diagnostic graphs do not change later.
+
+Docker Engine does not expose GPU utilization through container stats. JellyPulse therefore accepts an optional Prometheus-format Intel or NVIDIA GPU exporter without granting Docker exec or host-device access to the application. For same-host mode, enter these values under **Settings -> Telemetry** (or set them in `.env` and recreate the application container):
 
 ```env
 GPU_METRICS_URL=http://gpu-exporter:9400/metrics
@@ -198,7 +246,7 @@ GPU_METRIC_SCALE=1
 GPU_METRICS_VENDOR=NVIDIA
 ```
 
-`GPU_METRIC_NAME` is the exact Prometheus metric containing utilization. JellyPulse automatically recognizes `DCGM_FI_DEV_GPU_UTIL`, `nvidia_gpu_utilization`, `intel_gpu_usage_percent`, `intel_gpu_engine_busy_percent`, and `igpu_engine_busy_percent`; explicitly set the name when the exporter uses something else. Set `GPU_METRIC_SCALE=100` if the exporter reports a 0–1 ratio instead of 0–100 percent. For Intel, use the metric name and port supplied by the installed Intel GPU exporter and set `GPU_METRICS_VENDOR=Intel`. The exporter URL must be reachable from the JellyPulse container. If it is omitted or unavailable, reports still include CPU, RAM, and transcode telemetry while GPU is shown as unavailable.
+`GPU_METRIC_NAME` is the exact Prometheus metric containing utilization. JellyPulse automatically recognizes `DCGM_FI_DEV_GPU_UTIL`, `nvidia_gpu_utilization`, `intel_gpu_usage_percent`, `intel_gpu_engine_busy_percent`, and `igpu_engine_busy_percent`; explicitly set the name when the exporter uses something else. Set `GPU_METRIC_SCALE=100` if the exporter reports a 0–1 ratio instead of 0–100 percent. For Intel, use the metric name and port supplied by the installed Intel GPU exporter and set `GPU_METRICS_VENDOR=Intel`. The exporter URL must be reachable from the collector. In remote-agent mode, put the GPU values in `.env.telemetry` on the Jellyfin host and recreate the agent. If the exporter is omitted or unavailable, reports still include CPU, RAM, and transcode telemetry while GPU is clearly marked as optional or unavailable.
 
 ## Before exposing it to users
 
@@ -211,14 +259,18 @@ GPU_METRICS_VENDOR=NVIDIA
 
 ## Upgrade
 
+For a Portainer Web Editor installation, open the JellyPulse stack, enable **Re-pull image**, and select **Update the stack**. Keep both named volumes attached. Development installations remain on the `develop` image until `JELLYPULSE_IMAGE` is removed or changed to a released tag.
+
+The GitHub Actions container workflow publishes `develop` after changes reach the development branch. Version tags publish the full version, major/minor version, and `latest` images for both `linux/amd64` and `linux/arm64`.
+
 To update an installation that tracks `main`:
 
 ```sh
 cd /opt/jellypulse
 git status --short
 git pull --ff-only origin main
-docker compose up -d --build
-docker compose ps
+docker compose -f compose.source.yml up -d --build
+docker compose -f compose.source.yml ps
 ```
 
 Your `.env`, PostgreSQL volume, setup, reports, and destinations remain in place. If `git status` reports tracked-file changes, resolve or preserve them before pulling.
@@ -227,8 +279,8 @@ To pin a released version:
 
 ```sh
 git fetch --tags
-git checkout v1.2.0
-docker compose up -d --build
+git checkout v1.3.0
+docker compose -f compose.source.yml up -d --build
 ```
 
 ## Isolated development stack
@@ -252,7 +304,7 @@ Generate a new development encryption key with `openssl rand -base64 32`. Do not
 
 ```sh
 cd /opt/jellypulse
-docker compose stop app
+docker compose -f compose.source.yml stop app
 
 cd /opt/jellypulse-dev
 docker compose --env-file .env.dev -f compose.dev.yml up -d --build
@@ -273,7 +325,7 @@ cd /opt/jellypulse-dev
 docker compose --env-file .env.dev -f compose.dev.yml down
 
 cd /opt/jellypulse
-docker compose up -d app
+docker compose -f compose.source.yml up -d app
 ```
 
 The normal `down` command preserves the development database. Add `-v` only when you intentionally want to erase the development environment and repeat first-run setup.
@@ -296,7 +348,7 @@ Back up both the database and `.env`; neither is useful alone because `APP_ENCRY
 ```sh
 install -d -m 700 /var/backups/jellypulse
 cd /opt/jellypulse
-docker compose exec -T db pg_dump -U reporter -d reporter > /var/backups/jellypulse/jellypulse-backup.sql
+docker compose -f compose.source.yml exec -T db pg_dump -U reporter -d reporter > /var/backups/jellypulse/jellypulse-backup.sql
 install -m 600 .env /var/backups/jellypulse/jellypulse-env.backup
 ```
 
@@ -304,7 +356,7 @@ Store these files somewhere protected. Never rotate or regenerate `APP_ENCRYPTIO
 
 ## Troubleshooting
 
-Inspect the stack before changing or deleting anything:
+Inspect the default image-based stack before changing or deleting anything. For a source-building installation, add `-f compose.source.yml` after `docker compose` in these commands:
 
 ```sh
 docker compose ps -a
@@ -324,7 +376,6 @@ To intentionally erase JellyPulse and rerun first setup, use `docker compose dow
 
 ## Next additions
 
-- Optional remote CPU/RAM agent support when Jellyfin is not on the same Docker host.
 - Configurable metrics and issue retention policies.
 - Issue filtering by type/date/status and CSV export.
 - A QR-code landing link and a Jellyfin dashboard link/plugin.

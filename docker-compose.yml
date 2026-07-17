@@ -1,45 +1,34 @@
 services:
-  app:
-    build: .
-    restart: unless-stopped
-    # Localhost only by default. Put it behind HTTPS/VPN before changing this.
-    ports: ["${APP_BIND_ADDRESS:-127.0.0.1}:3000:3000"]
-    environment:
-      PGHOST: db
-      PGPORT: 5432
-      PGUSER: reporter
-      PGPASSWORD: ${POSTGRES_PASSWORD}
-      PGDATABASE: reporter
-      # Generate once: openssl rand -base64 32. Never change after setup.
-      APP_ENCRYPTION_KEY: ${APP_ENCRYPTION_KEY}
-      SESSION_COOKIE_SECURE: ${SESSION_COOKIE_SECURE:-false}
-      DOCKER_HOST: tcp://docker-proxy:2375
-      JELLYFIN_CONTAINER_NAME: ${JELLYFIN_CONTAINER_NAME:-jellyfin}
-      GPU_METRICS_URL: ${GPU_METRICS_URL:-}
-      GPU_METRIC_NAME: ${GPU_METRIC_NAME:-}
-      GPU_METRIC_SCALE: ${GPU_METRIC_SCALE:-1}
-      GPU_METRICS_VENDOR: ${GPU_METRICS_VENDOR:-}
-    depends_on:
-      db:
-        condition: service_healthy
-      docker-proxy:
-        condition: service_started
+  secrets-init:
+    image: alpine:3.22
+    restart: "no"
+    command: >-
+      sh -ec 'umask 077;
+      test -s /jellypulse-secrets/postgres_password || head -c 32 /dev/urandom | base64 | tr -d "\n" > /jellypulse-secrets/postgres_password;
+      test -s /jellypulse-secrets/encryption_key || head -c 32 /dev/urandom | base64 | tr -d "\n" > /jellypulse-secrets/encryption_key;
+      chmod 0444 /jellypulse-secrets/postgres_password /jellypulse-secrets/encryption_key'
+    volumes:
+      - jellypulse-secrets:/jellypulse-secrets
 
   db:
     image: postgres:17-alpine
     restart: unless-stopped
+    depends_on:
+      secrets-init:
+        condition: service_completed_successfully
     environment:
       POSTGRES_DB: reporter
       POSTGRES_USER: reporter
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
-    volumes: [postgres-data:/var/lib/postgresql/data]
+      POSTGRES_PASSWORD_FILE: /jellypulse-secrets/postgres_password
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+      - jellypulse-secrets:/jellypulse-secrets:ro
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U reporter -d reporter"]
       interval: 5s
       timeout: 5s
       retries: 12
 
-  # The app gets read-only Docker metadata/stats, never direct Docker-socket access.
   docker-proxy:
     image: tecnativa/docker-socket-proxy:latest
     restart: unless-stopped
@@ -64,7 +53,42 @@ services:
       SYSTEM: 0
       TASKS: 0
       VOLUMES: 0
-    volumes: [/var/run/docker.sock:/var/run/docker.sock:ro]
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+
+  app:
+    image: ${JELLYPULSE_IMAGE:-ghcr.io/sleepingpanda4/jellypulse:latest}
+    pull_policy: always
+    restart: unless-stopped
+    depends_on:
+      secrets-init:
+        condition: service_completed_successfully
+      db:
+        condition: service_healthy
+      docker-proxy:
+        condition: service_started
+    ports:
+      - "${APP_BIND_ADDRESS:-127.0.0.1}:${APP_PORT:-3000}:3000"
+    environment:
+      PGHOST: db
+      PGPORT: 5432
+      PGUSER: reporter
+      PGPASSWORD_FILE: /jellypulse-secrets/postgres_password
+      PGDATABASE: reporter
+      APP_ENCRYPTION_KEY_FILE: /jellypulse-secrets/encryption_key
+      SESSION_COOKIE_SECURE: ${SESSION_COOKIE_SECURE:-false}
+      DOCKER_HOST: tcp://docker-proxy:2375
+      JELLYFIN_CONTAINER_NAME: ${JELLYFIN_CONTAINER_NAME:-jellyfin}
+      TELEMETRY_MODE: ${TELEMETRY_MODE:-auto}
+      TELEMETRY_AGENT_URL: ${TELEMETRY_AGENT_URL:-}
+      TELEMETRY_AGENT_TOKEN: ${TELEMETRY_AGENT_TOKEN:-}
+      GPU_METRICS_URL: ${GPU_METRICS_URL:-}
+      GPU_METRIC_NAME: ${GPU_METRIC_NAME:-}
+      GPU_METRIC_SCALE: ${GPU_METRIC_SCALE:-1}
+      GPU_METRICS_VENDOR: ${GPU_METRICS_VENDOR:-}
+    volumes:
+      - jellypulse-secrets:/jellypulse-secrets:ro
 
 volumes:
   postgres-data:
+  jellypulse-secrets:
