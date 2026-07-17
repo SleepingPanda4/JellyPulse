@@ -8,7 +8,7 @@
 
 JellyPulse gives you one place to report playback problems and see what is happening on your Jellyfin server. It is lightweight, self-hosted, and meant to be pretty easy to live with.
 
-Current release: **v1.2.0** · See [CHANGELOG.md](CHANGELOG.md) for release history.
+Current release: **v1.3.0** · See [CHANGELOG.md](CHANGELOG.md) for release history.
 
 ## Features
 
@@ -279,7 +279,7 @@ To pin a released version:
 
 ```sh
 git fetch --tags
-git checkout v1.2.0
+git checkout v1.3.0
 docker compose -f compose.source.yml up -d --build
 ```
 

@@ -4,6 +4,8 @@ All notable JellyPulse changes are documented here.
 
 ## [Unreleased]
 
+## [1.3.0] - 2026-07-17
+
 ### Added
 
 - The JellyPulse logo is now used as the browser favicon and mobile home-screen icon.
