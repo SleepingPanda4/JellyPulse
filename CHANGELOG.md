@@ -6,12 +6,15 @@ All notable JellyPulse changes are documented here.
 
 ### Added
 
+- A Portainer Web Editor stack that deploys the complete application without terminal commands and automatically generates persistent database and encryption secrets.
+- Automated multi-architecture GHCR images for Portainer deployments on AMD64 and ARM64 hosts.
 - Guided telemetry settings with independent CPU/RAM, GPU, and Jellyfin playback-pipeline health diagnostics.
 - Automatic Jellyfin container detection for same-host Docker installations.
 - An authenticated JellyPulse telemetry agent and restricted socket-proxy Compose stack for remote Jellyfin, with a clearly labeled whole-host CPU/RAM fallback for native LXC/VM installations.
 
 ### Changed
 
+- JellyPulse can read its database password and application encryption key from mounted secret files while retaining environment-variable compatibility.
 - Telemetry errors now remain visible to administrators instead of being represented only as unavailable graph values.
 - A Jellyfin server with no active viewers now reports a healthy zero-stream playback pipeline.
 

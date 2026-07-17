@@ -85,6 +85,27 @@ JellyPulse begins building its own watch history after this feature is installed
 
 ## Install
 
+### Portainer installation (no terminal commands)
+
+JellyPulse includes `portainer-stack.yml` for Docker Standalone environments managed by Portainer. The stack contains JellyPulse, PostgreSQL, the restricted Docker socket proxy, automatic health ordering, and a one-time secret initializer. It generates the PostgreSQL password and 32-byte application encryption key automatically, then retains both in a private named volume. No repository clone, `.env` file, or command-line secret generation is required on the client host.
+
+1. In Portainer, open **Stacks -> Add stack -> Web editor** and name the stack `jellypulse`.
+2. Copy the complete contents of `portainer-stack.yml` into the editor.
+3. During development, add the environment variable `JELLYPULSE_IMAGE=ghcr.io/sleepingpanda4/jellypulse:develop`. Released stacks use the default `ghcr.io/sleepingpanda4/jellypulse:latest` image.
+4. Keep `APP_BIND_ADDRESS=127.0.0.1` when Caddy runs on the same Docker host. Set it to `0.0.0.0` in Portainer only when a trusted remote reverse proxy must connect, then restrict port 3000 with the host firewall.
+5. Set `SESSION_COOKIE_SECURE=true` when the public address uses HTTPS. Leave it false only for temporary direct HTTP access.
+6. Select **Deploy the stack**, then open JellyPulse and complete its browser-based first-run setup.
+
+After deployment, `secrets-init` showing **exited (0)** is expected: it is a one-time initialization job, while `app`, `db`, and `docker-proxy` remain running.
+
+The first container-image publication is private by default. Before clients deploy this stack, the project owner must open **GitHub profile -> Packages -> jellypulse -> Package settings -> Change visibility -> Public**. This is a one-time maintainer step; public GHCR images can then be pulled by Portainer without registry credentials.
+
+The `jellypulse_postgres-data` and `jellypulse_jellypulse-secrets` volumes must be backed up together. Deleting only the secrets volume makes the existing encrypted settings and PostgreSQL password unusable. Removing the stack without removing its volumes preserves both.
+
+This one-stack installation collects Docker CPU/RAM only when Jellyfin runs on the same Docker endpoint. A Jellyfin server on another host still needs the separate authenticated telemetry agent deployed on that host's Portainer endpoint; an ordinary Compose stack cannot place services across two independent Docker hosts.
+
+### Command-line installation
+
 1. Clone the repository and enter it:
 
    ```sh
@@ -235,6 +256,10 @@ GPU_METRICS_VENDOR=NVIDIA
 - Treat account invitation links as passwords too. Send them privately, choose the shortest practical lifetime, and revoke unused links when plans change.
 
 ## Upgrade
+
+For a Portainer Web Editor installation, open the JellyPulse stack, enable **Re-pull image**, and select **Update the stack**. Keep both named volumes attached. Development installations remain on the `develop` image until `JELLYPULSE_IMAGE` is removed or changed to a released tag.
+
+The GitHub Actions container workflow publishes `develop` after changes reach the development branch. Version tags publish the full version, major/minor version, and `latest` images for both `linux/amd64` and `linux/arm64`.
 
 To update an installation that tracks `main`:
 

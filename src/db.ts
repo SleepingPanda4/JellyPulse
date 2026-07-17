@@ -1,7 +1,9 @@
 import pg from 'pg';
+import { readFileSync } from 'node:fs';
+function databasePassword() { if (process.env.PGPASSWORD) return process.env.PGPASSWORD; const path = process.env.PGPASSWORD_FILE; if (!path) return undefined; return readFileSync(path, 'utf8').trim(); }
 export const db = new pg.Pool(process.env.DATABASE_URL ? { connectionString: process.env.DATABASE_URL } : {
   host: process.env.PGHOST || 'db', port: Number(process.env.PGPORT || 5432),
-  user: process.env.PGUSER || 'reporter', password: process.env.PGPASSWORD,
+  user: process.env.PGUSER || 'reporter', password: databasePassword(),
   database: process.env.PGDATABASE || 'reporter'
 });
 
