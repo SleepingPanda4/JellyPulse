@@ -85,6 +85,34 @@ JellyPulse begins building its own watch history after this feature is installed
 
 ## Install
 
+### Container image install (no repository clone)
+
+JellyPulse publishes one multi-architecture image for both the web application and remote telemetry agent. A client can download only the production Compose file:
+
+```sh
+install -d -m 700 /opt/jellypulse
+cd /opt/jellypulse
+curl -fsSL https://raw.githubusercontent.com/SleepingPanda4/JellyPulse/main/compose.install.yml -o compose.yml
+```
+
+Create a small `.env` beside it for secrets and local deployment choices. This is not application source code and should remain private:
+
+```sh
+cat > .env <<EOF
+POSTGRES_PASSWORD=$(openssl rand -hex 32)
+APP_ENCRYPTION_KEY=$(openssl rand -base64 32)
+APP_BIND_ADDRESS=127.0.0.1
+SESSION_COOKIE_SECURE=false
+EOF
+chmod 600 .env
+docker compose up -d
+docker compose ps
+```
+
+The Compose file pulls `ghcr.io/sleepingpanda4/jellypulse:latest`; upgrades are simply `docker compose pull && docker compose up -d`. The source-based installation below remains available for development or local image modifications.
+
+### Source-based install
+
 1. Clone the repository and enter it:
 
    ```sh
@@ -180,27 +208,33 @@ If Caddy runs on a different host or in an unrelated Docker network, it cannot r
 
 JellyPulse authentication, session detection, reporting, and notifications work with a Jellyfin server on another machine as long as it is reachable from the JellyPulse container. Browser CORS settings do not apply because JellyPulse contacts Jellyfin server-to-server.
 
-Playback-pipeline telemetry also works remotely because it comes from the Jellyfin API. CPU and RAM come from Docker, so install the included telemetry agent on the Docker host that actually runs Jellyfin:
+Playback-pipeline telemetry also works remotely because it comes from the Jellyfin API. CPU and RAM come from Docker, so download the standalone Compose file on the host that actually runs Jellyfin. No JellyPulse repository clone is required:
 
 ```sh
-git clone https://github.com/SleepingPanda4/JellyPulse.git /opt/jellypulse-telemetry
+install -d -m 700 /opt/jellypulse-telemetry
 cd /opt/jellypulse-telemetry
-cp .env.telemetry.example .env.telemetry
-openssl rand -hex 32
-nano .env.telemetry
+curl -fsSL https://raw.githubusercontent.com/SleepingPanda4/JellyPulse/main/compose.telemetry-agent.yml -o compose.yml
+cat > .env <<EOF
+TELEMETRY_AGENT_TOKEN=$(openssl rand -hex 32)
+JELLYFIN_CONTAINER_NAME=jellyfin
+TELEMETRY_AGENT_BIND_ADDRESS=YOUR-JELLYFIN-HOST-LAN-IP
+TELEMETRY_AGENT_PORT=9469
+TELEMETRY_HOST_FALLBACK=true
+EOF
+chmod 600 .env
 ```
 
-Paste the generated value into `TELEMETRY_AGENT_TOKEN`. Set `JELLYFIN_CONTAINER_NAME` if the container is not named `jellyfin`, and set `TELEMETRY_AGENT_BIND_ADDRESS` to the Jellyfin host's private LAN/VPN address. Do not bind the agent to a public interface. If Jellyfin is installed directly in an LXC/VM instead of Docker, leave `TELEMETRY_HOST_FALLBACK=true`; the status card will clearly label CPU/RAM as whole-host usage. Then start it:
+Set `JELLYFIN_CONTAINER_NAME` if the container is not named `jellyfin`, and replace `YOUR-JELLYFIN-HOST-LAN-IP` with the host's private LAN/VPN address. Do not bind the agent to a public interface. If Jellyfin is installed directly in an LXC/VM instead of Docker, leave `TELEMETRY_HOST_FALLBACK=true`; the status card will clearly label CPU/RAM as whole-host usage. Then start it:
 
 ```sh
-docker compose --env-file .env.telemetry -f compose.telemetry-agent.yml up -d --build
-docker compose --env-file .env.telemetry -f compose.telemetry-agent.yml ps
+docker compose up -d
+docker compose ps
 curl http://JELLYFIN-HOST-IP:9469/health
 ```
 
 In JellyPulse, open **Settings -> Telemetry**, choose **Different host (remote agent)**, enter `http://JELLYFIN-HOST-IP:9469`, paste the same token, and select **Save and test telemetry**. The token is encrypted with AES-256-GCM before it is stored and is never returned to the browser. Restrict TCP port 9469 with the host firewall so only the JellyPulse host can reach it. The agent exposes only its health result and aggregated CPU/RAM/GPU values; its internal Docker socket proxy does not publish a port.
 
-To update the remote agent later, pull the same JellyPulse revision and rebuild that Compose file. The agent has no database or persistent volume.
+To update the remote agent later, run `docker compose pull && docker compose up -d`. The agent has no database or persistent volume.
 
 ## Jellyfin API key
 
@@ -247,6 +281,16 @@ docker compose ps
 ```
 
 Your `.env`, PostgreSQL volume, setup, reports, and destinations remain in place. If `git status` reports tracked-file changes, resolve or preserve them before pulling.
+
+### Container image publishing
+
+The GitHub Actions workflow publishes `ghcr.io/sleepingpanda4/jellypulse:develop` after a push to `develop`. A version tag such as `v1.3.0` publishes `1.3.0`, `1.3`, and `latest`. It builds both `linux/amd64` and `linux/arm64` images.
+
+GitHub creates the container package as private on its first publication. After the first successful workflow, the repository owner must open **GitHub profile -> Packages -> jellypulse -> Package settings -> Change visibility -> Public**. This is a one-time maintainer step; after it is public, clients can pull the image without a GitHub login. To test the development image before a release, add this to the install or telemetry `.env`:
+
+```env
+JELLYPULSE_IMAGE=ghcr.io/sleepingpanda4/jellypulse:develop
+```
 
 To pin a released version:
 

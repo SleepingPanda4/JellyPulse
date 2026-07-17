@@ -1,26 +1,47 @@
-name: jellypulse-telemetry
+name: jellypulse
 
 services:
-  agent:
+  app:
     image: ${JELLYPULSE_IMAGE:-ghcr.io/sleepingpanda4/jellypulse:latest}
     pull_policy: always
     restart: unless-stopped
-    command: npm run telemetry-agent
-    ports: ["${TELEMETRY_AGENT_BIND_ADDRESS:-127.0.0.1}:${TELEMETRY_AGENT_PORT:-9469}:9469"]
+    ports: ["${APP_BIND_ADDRESS:-127.0.0.1}:3000:3000"]
     environment:
+      PGHOST: db
+      PGPORT: 5432
+      PGUSER: reporter
+      PGPASSWORD: ${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD}
+      PGDATABASE: reporter
+      APP_ENCRYPTION_KEY: ${APP_ENCRYPTION_KEY:?Set APP_ENCRYPTION_KEY}
+      SESSION_COOKIE_SECURE: ${SESSION_COOKIE_SECURE:-false}
       DOCKER_HOST: tcp://docker-proxy:2375
-      TELEMETRY_AGENT_TOKEN: ${TELEMETRY_AGENT_TOKEN}
-      TELEMETRY_AGENT_PORT: 9469
-      TELEMETRY_HOST_FALLBACK: ${TELEMETRY_HOST_FALLBACK:-true}
       JELLYFIN_CONTAINER_NAME: ${JELLYFIN_CONTAINER_NAME:-jellyfin}
+      TELEMETRY_MODE: ${TELEMETRY_MODE:-auto}
+      TELEMETRY_AGENT_URL: ${TELEMETRY_AGENT_URL:-}
+      TELEMETRY_AGENT_TOKEN: ${TELEMETRY_AGENT_TOKEN:-}
       GPU_METRICS_URL: ${GPU_METRICS_URL:-}
       GPU_METRIC_NAME: ${GPU_METRIC_NAME:-}
       GPU_METRIC_SCALE: ${GPU_METRIC_SCALE:-1}
       GPU_METRICS_VENDOR: ${GPU_METRICS_VENDOR:-}
     depends_on:
+      db:
+        condition: service_healthy
       docker-proxy:
         condition: service_started
-    volumes: [/proc:/host/proc:ro]
+
+  db:
+    image: postgres:17-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: reporter
+      POSTGRES_USER: reporter
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD}
+    volumes: [postgres-data:/var/lib/postgresql/data]
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U reporter -d reporter"]
+      interval: 5s
+      timeout: 5s
+      retries: 12
 
   docker-proxy:
     image: tecnativa/docker-socket-proxy:latest
@@ -47,3 +68,6 @@ services:
       TASKS: 0
       VOLUMES: 0
     volumes: [/var/run/docker.sock:/var/run/docker.sock:ro]
+
+volumes:
+  postgres-data:
