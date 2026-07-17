@@ -87,10 +87,10 @@ JellyPulse begins building its own watch history after this feature is installed
 
 ### Portainer installation (no terminal commands)
 
-JellyPulse includes `portainer-stack.yml` for Docker Standalone environments managed by Portainer. The stack contains JellyPulse, PostgreSQL, the restricted Docker socket proxy, automatic health ordering, and a one-time secret initializer. It generates the PostgreSQL password and 32-byte application encryption key automatically, then retains both in a private named volume. No repository clone, `.env` file, or command-line secret generation is required on the client host.
+The default `docker-compose.yml` is ready for Docker Standalone environments managed by Portainer. The stack contains JellyPulse, PostgreSQL, the restricted Docker socket proxy, automatic health ordering, and a one-time secret initializer. It generates the PostgreSQL password and 32-byte application encryption key automatically, then retains both in a private named volume. No repository clone, `.env` file, or command-line secret generation is required on the client host.
 
 1. In Portainer, open **Stacks -> Add stack -> Web editor** and name the stack `jellypulse`.
-2. Copy the complete contents of `portainer-stack.yml` into the editor.
+2. Copy the complete contents of `docker-compose.yml` into the editor.
 3. During development, add the environment variable `JELLYPULSE_IMAGE=ghcr.io/sleepingpanda4/jellypulse:develop`. Released stacks use the default `ghcr.io/sleepingpanda4/jellypulse:latest` image.
 4. Keep `APP_BIND_ADDRESS=127.0.0.1` when Caddy runs on the same Docker host. Set it to `0.0.0.0` in Portainer only when a trusted remote reverse proxy must connect, then restrict port 3000 with the host firewall.
 5. Set `SESSION_COOKIE_SECURE=true` when the public address uses HTTPS. Leave it false only for temporary direct HTTP access.
@@ -104,7 +104,9 @@ The `jellypulse_postgres-data` and `jellypulse_jellypulse-secrets` volumes must 
 
 This one-stack installation collects Docker CPU/RAM only when Jellyfin runs on the same Docker endpoint. A Jellyfin server on another host still needs the separate authenticated telemetry agent deployed on that host's Portainer endpoint; an ordinary Compose stack cannot place services across two independent Docker hosts.
 
-### Command-line installation
+### Source-building command-line installation
+
+The source-building stack is retained as `compose.source.yml`. Always include `-f compose.source.yml` with production source-install commands; running plain `docker compose` now selects the image-based Portainer stack.
 
 1. Clone the repository and enter it:
 
@@ -129,10 +131,10 @@ This one-stack installation collects Docker CPU/RAM only when Jellyfin runs on t
 3. From this directory, run:
 
    ```sh
-   docker compose up -d --build
+   docker compose -f compose.source.yml up -d --build
    ```
 
-   Docker waits for PostgreSQL to pass its health check before starting JellyPulse. To see startup state, run `docker compose ps`.
+   Docker waits for PostgreSQL to pass its health check before starting JellyPulse. To see startup state, run `docker compose -f compose.source.yml ps`.
 
 4. On the host machine, open `http://localhost:3000` and complete setup. Use the SSH-tunnel or temporary LAN instructions below when Docker is running on a remote LXC/server.
 
@@ -169,7 +171,7 @@ APP_BIND_ADDRESS=0.0.0.0
 Apply it with:
 
 ```sh
-docker compose up -d --force-recreate
+docker compose -f compose.source.yml up -d --force-recreate
 ```
 
 The dashboard will then be available at `http://YOUR-LXC-IP:3000`. Do **not** leave this enabled when the LXC is publicly reachable. When Caddy is configured, change the value back to `127.0.0.1`, proxy Caddy to `127.0.0.1:3000`, and set `SESSION_COOKIE_SECURE=true`.
@@ -192,7 +194,7 @@ SESSION_COOKIE_SECURE=true
 ```
 
 ```sh
-docker compose up -d --force-recreate app
+docker compose -f compose.source.yml up -d --force-recreate app
 ```
 
 If Caddy runs on a different host or in an unrelated Docker network, it cannot reach the LXC's loopback address. Bind JellyPulse to the LAN address with `APP_BIND_ADDRESS=0.0.0.0`, proxy Caddy to `YOUR-LXC-IP:3000`, and use a firewall to allow port 3000 only from the reverse proxy.
@@ -267,8 +269,8 @@ To update an installation that tracks `main`:
 cd /opt/jellypulse
 git status --short
 git pull --ff-only origin main
-docker compose up -d --build
-docker compose ps
+docker compose -f compose.source.yml up -d --build
+docker compose -f compose.source.yml ps
 ```
 
 Your `.env`, PostgreSQL volume, setup, reports, and destinations remain in place. If `git status` reports tracked-file changes, resolve or preserve them before pulling.
@@ -278,7 +280,7 @@ To pin a released version:
 ```sh
 git fetch --tags
 git checkout v1.2.0
-docker compose up -d --build
+docker compose -f compose.source.yml up -d --build
 ```
 
 ## Isolated development stack
@@ -302,7 +304,7 @@ Generate a new development encryption key with `openssl rand -base64 32`. Do not
 
 ```sh
 cd /opt/jellypulse
-docker compose stop app
+docker compose -f compose.source.yml stop app
 
 cd /opt/jellypulse-dev
 docker compose --env-file .env.dev -f compose.dev.yml up -d --build
@@ -323,7 +325,7 @@ cd /opt/jellypulse-dev
 docker compose --env-file .env.dev -f compose.dev.yml down
 
 cd /opt/jellypulse
-docker compose up -d app
+docker compose -f compose.source.yml up -d app
 ```
 
 The normal `down` command preserves the development database. Add `-v` only when you intentionally want to erase the development environment and repeat first-run setup.
@@ -346,7 +348,7 @@ Back up both the database and `.env`; neither is useful alone because `APP_ENCRY
 ```sh
 install -d -m 700 /var/backups/jellypulse
 cd /opt/jellypulse
-docker compose exec -T db pg_dump -U reporter -d reporter > /var/backups/jellypulse/jellypulse-backup.sql
+docker compose -f compose.source.yml exec -T db pg_dump -U reporter -d reporter > /var/backups/jellypulse/jellypulse-backup.sql
 install -m 600 .env /var/backups/jellypulse/jellypulse-env.backup
 ```
 
@@ -354,7 +356,7 @@ Store these files somewhere protected. Never rotate or regenerate `APP_ENCRYPTIO
 
 ## Troubleshooting
 
-Inspect the stack before changing or deleting anything:
+Inspect the default image-based stack before changing or deleting anything. For a source-building installation, add `-f compose.source.yml` after `docker compose` in these commands:
 
 ```sh
 docker compose ps -a
