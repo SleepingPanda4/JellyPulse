@@ -4,6 +4,10 @@ All notable JellyPulse changes are documented here.
 
 ## [Unreleased]
 
+### Changed
+
+- Slimmed down the README to focus on key features, setup, security, updates, backups, and common troubleshooting.
+
 ## [1.3.0] - 2026-07-17
 
 ### Added
