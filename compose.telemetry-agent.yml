@@ -2,8 +2,7 @@ name: jellypulse-telemetry
 
 services:
   agent:
-    image: ${JELLYPULSE_IMAGE:-ghcr.io/sleepingpanda4/jellypulse:latest}
-    pull_policy: always
+    build: .
     restart: unless-stopped
     command: npm run telemetry-agent
     ports: ["${TELEMETRY_AGENT_BIND_ADDRESS:-127.0.0.1}:${TELEMETRY_AGENT_PORT:-9469}:9469"]

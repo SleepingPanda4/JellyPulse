@@ -9,7 +9,6 @@ All notable JellyPulse changes are documented here.
 - Guided telemetry settings with independent CPU/RAM, GPU, and Jellyfin playback-pipeline health diagnostics.
 - Automatic Jellyfin container detection for same-host Docker installations.
 - An authenticated JellyPulse telemetry agent and restricted socket-proxy Compose stack for remote Jellyfin, with a clearly labeled whole-host CPU/RAM fallback for native LXC/VM installations.
-- Automated multi-architecture GHCR image publishing and image-only Compose files for source-free JellyPulse and telemetry-agent installation.
 
 ### Changed
 
