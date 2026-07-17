@@ -4,6 +4,17 @@ All notable JellyPulse changes are documented here.
 
 ## [Unreleased]
 
+### Added
+
+- Guided telemetry settings with independent CPU/RAM, GPU, and Jellyfin playback-pipeline health diagnostics.
+- Automatic Jellyfin container detection for same-host Docker installations.
+- An authenticated JellyPulse telemetry agent and restricted socket-proxy Compose stack for remote Jellyfin, with a clearly labeled whole-host CPU/RAM fallback for native LXC/VM installations.
+
+### Changed
+
+- Telemetry errors now remain visible to administrators instead of being represented only as unavailable graph values.
+- A Jellyfin server with no active viewers now reports a healthy zero-stream playback pipeline.
+
 ## [1.2.0] - 2026-07-16
 
 ### Added

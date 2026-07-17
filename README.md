@@ -31,7 +31,8 @@ Current release: **v1.2.0** · See [CHANGELOG.md](CHANGELOG.md) for release hist
 - A Users workspace with Jellyfin account status, most recently watched media, approximate observed watch time, most-watched title or series, watch history, user reports, reporting links, and one-time account invitations.
 - A report-detail popup with playback progress, the exact reported problem, five-minute CPU/RAM/GPU and direct-play/remux/transcode graphs, active transcode details, and resolution actions.
 - Page-wide popup scrolling with sticky titles and Close controls, desktop backdrop dismissal, and larger mobile close targets.
-- A Settings workspace for securely changing the Jellyfin connection and managing notification destinations.
+- A Settings workspace for securely changing the Jellyfin connection, running per-source telemetry diagnostics, and managing notification destinations.
+- Automatic same-host Jellyfin container detection plus an authenticated aggregate telemetry agent for Jellyfin running on another Docker host.
 - Live playback progress under **Report a playback issue**, including elapsed time, total runtime, and percentage watched.
 - One-time Jellyfin account invitations that expire after 30 minutes, 1 hour, 1 day, or 7 days.
 - Revocable pre-authenticated reporting links with optional expiration. Raw 256-bit link tokens are shown once and only SHA-256 hashes are stored; link sessions never receive administrator access.
@@ -80,7 +81,7 @@ JellyPulse begins building its own watch history after this feature is installed
 - A Jellyfin server reachable from the JellyPulse container.
 - A dedicated Jellyfin API key and an existing Jellyfin user to designate as the JellyPulse administrator.
 - Git if installing or updating from GitHub.
-- Optional: Jellyfin on the same Docker host if you want container CPU/RAM collection.
+- Jellyfin may run on the same Docker host or another reachable Docker host. Remote CPU/RAM collection uses the included telemetry agent.
 
 ## Install
 
@@ -179,7 +180,27 @@ If Caddy runs on a different host or in an unrelated Docker network, it cannot r
 
 JellyPulse authentication, session detection, reporting, and notifications work with a Jellyfin server on another machine as long as it is reachable from the JellyPulse container. Browser CORS settings do not apply because JellyPulse contacts Jellyfin server-to-server.
 
-The included Docker metrics collector is different: it reads the local Docker Engine and therefore only finds a Jellyfin container running on the same Docker host. With remote Jellyfin, reporting still works but the CPU/RAM graph remains empty until a remote metrics agent/exporter is added.
+Playback-pipeline telemetry also works remotely because it comes from the Jellyfin API. CPU and RAM come from Docker, so install the included telemetry agent on the Docker host that actually runs Jellyfin:
+
+```sh
+git clone https://github.com/SleepingPanda4/JellyPulse.git /opt/jellypulse-telemetry
+cd /opt/jellypulse-telemetry
+cp .env.telemetry.example .env.telemetry
+openssl rand -hex 32
+nano .env.telemetry
+```
+
+Paste the generated value into `TELEMETRY_AGENT_TOKEN`. Set `JELLYFIN_CONTAINER_NAME` if the container is not named `jellyfin`, and set `TELEMETRY_AGENT_BIND_ADDRESS` to the Jellyfin host's private LAN/VPN address. Do not bind the agent to a public interface. If Jellyfin is installed directly in an LXC/VM instead of Docker, leave `TELEMETRY_HOST_FALLBACK=true`; the status card will clearly label CPU/RAM as whole-host usage. Then start it:
+
+```sh
+docker compose --env-file .env.telemetry -f compose.telemetry-agent.yml up -d --build
+docker compose --env-file .env.telemetry -f compose.telemetry-agent.yml ps
+curl http://JELLYFIN-HOST-IP:9469/health
+```
+
+In JellyPulse, open **Settings -> Telemetry**, choose **Different host (remote agent)**, enter `http://JELLYFIN-HOST-IP:9469`, paste the same token, and select **Save and test telemetry**. The token is encrypted with AES-256-GCM before it is stored and is never returned to the browser. Restrict TCP port 9469 with the host firewall so only the JellyPulse host can reach it. The agent exposes only its health result and aggregated CPU/RAM/GPU values; its internal Docker socket proxy does not publish a port.
+
+To update the remote agent later, pull the same JellyPulse revision and rebuild that Compose file. The agent has no database or persistent volume.
 
 ## Jellyfin API key
 
@@ -187,9 +208,13 @@ In Jellyfin, create a dedicated API key for this service rather than reusing one
 
 ## Metrics and GPU support
 
-The compose stack uses a narrowly permissioned Docker socket proxy instead of giving the application the Docker socket. It reads Jellyfin container CPU and memory every 10 seconds. During the same sample JellyPulse reads active Jellyfin sessions and records direct-play, remux, and transcode counts plus codec, container, resolution, bitrate, framerate, hardware-acceleration type, completion, and transcode reasons. The overview shows the latest five-minute window and refreshes every 10 seconds. These samples are also embedded into each report so its diagnostic graphs do not change later.
+Open **Settings -> Telemetry** first. Its three independent status cards show whether CPU/RAM, GPU, and the Jellyfin playback pipeline are available, which source each uses, and the last error. **Run diagnostics** performs a fresh sample immediately.
 
-Docker Engine does not expose GPU utilization through container stats. JellyPulse therefore accepts an optional Prometheus-format Intel or NVIDIA GPU exporter without granting Docker exec or host-device access to the application. Set these values in `.env` and recreate the application container:
+In **Same Docker host (automatic)** mode, the Compose stack uses a narrowly permissioned Docker socket proxy instead of giving the application the Docker socket. JellyPulse first tries the configured container name and can automatically select a single container whose name, image, or labels identify Jellyfin. If several matches exist, enter the exact container name in Settings. In **Different host (remote agent)** mode, the agent uses the same restricted proxy beside Jellyfin and returns only aggregate measurements through a token-protected endpoint. If no Jellyfin container exists, it falls back to whole-host CPU/RAM from a read-only `/proc` mount.
+
+JellyPulse reads Jellyfin container CPU and memory every 10 seconds. During the same sample it reads active Jellyfin sessions and records direct-play, remux, and transcode counts plus codec, container, resolution, bitrate, framerate, hardware-acceleration type, completion, and transcode reasons. An idle server correctly reports zero streams; **Unavailable** means the Jellyfin API request itself failed. The overview shows the latest five-minute window and refreshes every 10 seconds. These samples are also embedded into each report so its diagnostic graphs do not change later.
+
+Docker Engine does not expose GPU utilization through container stats. JellyPulse therefore accepts an optional Prometheus-format Intel or NVIDIA GPU exporter without granting Docker exec or host-device access to the application. For same-host mode, enter these values under **Settings -> Telemetry** (or set them in `.env` and recreate the application container):
 
 ```env
 GPU_METRICS_URL=http://gpu-exporter:9400/metrics
@@ -198,7 +223,7 @@ GPU_METRIC_SCALE=1
 GPU_METRICS_VENDOR=NVIDIA
 ```
 
-`GPU_METRIC_NAME` is the exact Prometheus metric containing utilization. JellyPulse automatically recognizes `DCGM_FI_DEV_GPU_UTIL`, `nvidia_gpu_utilization`, `intel_gpu_usage_percent`, `intel_gpu_engine_busy_percent`, and `igpu_engine_busy_percent`; explicitly set the name when the exporter uses something else. Set `GPU_METRIC_SCALE=100` if the exporter reports a 0–1 ratio instead of 0–100 percent. For Intel, use the metric name and port supplied by the installed Intel GPU exporter and set `GPU_METRICS_VENDOR=Intel`. The exporter URL must be reachable from the JellyPulse container. If it is omitted or unavailable, reports still include CPU, RAM, and transcode telemetry while GPU is shown as unavailable.
+`GPU_METRIC_NAME` is the exact Prometheus metric containing utilization. JellyPulse automatically recognizes `DCGM_FI_DEV_GPU_UTIL`, `nvidia_gpu_utilization`, `intel_gpu_usage_percent`, `intel_gpu_engine_busy_percent`, and `igpu_engine_busy_percent`; explicitly set the name when the exporter uses something else. Set `GPU_METRIC_SCALE=100` if the exporter reports a 0–1 ratio instead of 0–100 percent. For Intel, use the metric name and port supplied by the installed Intel GPU exporter and set `GPU_METRICS_VENDOR=Intel`. The exporter URL must be reachable from the collector. In remote-agent mode, put the GPU values in `.env.telemetry` on the Jellyfin host and recreate the agent. If the exporter is omitted or unavailable, reports still include CPU, RAM, and transcode telemetry while GPU is clearly marked as optional or unavailable.
 
 ## Before exposing it to users
 
@@ -324,7 +349,6 @@ To intentionally erase JellyPulse and rerun first setup, use `docker compose dow
 
 ## Next additions
 
-- Optional remote CPU/RAM agent support when Jellyfin is not on the same Docker host.
 - Configurable metrics and issue retention policies.
 - Issue filtering by type/date/status and CSV export.
 - A QR-code landing link and a Jellyfin dashboard link/plugin.
