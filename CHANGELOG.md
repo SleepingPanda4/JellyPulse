@@ -17,7 +17,7 @@ All notable JellyPulse changes are documented here.
 
 ### Changed
 
-- Product wording now uses **Report and Monitor**, with the previous three-word tagline removed from the app and GitHub page.
+- Rebranded JellyPulse.
 - The image-based Portainer stack is now the default `docker-compose.yml`; the repository-building stack is preserved as `compose.source.yml`.
 - JellyPulse can read its database password and application encryption key from mounted secret files while retaining environment-variable compatibility.
 - Telemetry errors now remain visible to administrators instead of being represented only as unavailable graph values.
