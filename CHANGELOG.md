@@ -6,6 +6,7 @@ All notable JellyPulse changes are documented here.
 
 ### Added
 
+- The JellyPulse logo is now used as the browser favicon and mobile home-screen icon.
 - A Portainer Web Editor stack that deploys the complete application without terminal commands and automatically generates persistent database and encryption secrets.
 - Automated multi-architecture GHCR images for Portainer deployments on AMD64 and ARM64 hosts.
 - Guided telemetry settings with independent CPU/RAM, GPU, and Jellyfin playback-pipeline health diagnostics.
